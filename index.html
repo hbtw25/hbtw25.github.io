@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Proses Perumusan dan Penetapan Pancasila</title>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/ScrollToPlugin.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #F3E5AB;
+            color: #3B2D2F;
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        .hero-section iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .hero-section h1,
+        .hero-section p {
+            position: relative;
+            z-index: 2;
+            font-family: 'Georgia', serif;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .hero-section p {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 50px;
+            margin: 50px 0;
+            transition: all 0.5s ease-in-out;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        #section1 {
+            background-color: #FFE082;
+        }
+
+        #section2 {
+            background-color: #FFCC80;
+        }
+
+        #section3 {
+            background-color: #FFAB40;
+        }
+
+        #section4 {
+            background-color: #FF8A00;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #3B2D2F;
+            font-family: 'Georgia', serif;
+        }
+
+        .section p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #4E403A;
+        }
+
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #A08458;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            z-index: 1000;
+        }
+
+        #scrollTopBtn:hover {
+            background-color: #6D4C41;
+        }
+
+        .section img {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .content-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+        }
+
+        .text-content {
+            max-width: 400px;
+            text-align: justify;
+        }
+
+        .text-content p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #4E403A;
+        }
+
+        /* Progress Bar Styles */
+        #progressBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background-color: #A08458;
+            width: 0%;
+            z-index: 999;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-section p {
+                font-size: 1.2rem;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+            }
+
+            .section p {
+                font-size: 1rem;
+            }
+
+            .content-wrapper {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .text-content {
+                max-width: 100%;
+            }
+
+            .section img {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-section h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero-section p {
+                font-size: 1rem;
+            }
+
+            .section h2 {
+                font-size: 1.5rem;
+            }
+
+            .section p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Progress Bar -->
+    <div id="progressBar"></div>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="heroSection">
+        <!-- YouTube video embedded as background -->
+        <iframe src="https://www.youtube.com/embed/hwjW8Ia3BpQ?autoplay=1&mute=1&loop=1&playlist=hwjW8Ia3BpQ&controls=0&showinfo=0&rel=0"
+            frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+        <h1>Proses Perumusan dan Penetapan Pancasila</h1>
+        <p>Sejarah perjalanan lahirnya dasar negara Indonesia</p>
+    </section>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn">Ke Atas</button>
+
+    <!-- Timeline Section 1 -->
+    <section class="section" id="section1">
+        <div class="section-content">
+            <h2>29 Mei 1945 - Sidang BPUPKI Pertama</h2>
+            <div class="content-wrapper">
+                <img src="https://awsimages.detik.net.id/community/media/visual/2023/06/01/sidang-pertama-badan-penyelidik-usaha-usaha-persiapan-kemerdekaan-indonesia-bpupki-pada-29-mei-1-juni-1945-di-gedung-chou-shan_169.jpeg?w=1200"
+                    alt="Sidang BPUPKI Pertama">
+                <div class="text-content">
+                    <p>Pada tanggal ini, BPUPKI mengadakan sidang pertama untuk membahas dasar negara Indonesia merdeka. Beberapa tokoh seperti Soekarno, Hatta, dan Ki Hadjar Dewantara memberikan usul terkait konsep dasar negara. Diskusi ini menjadi fondasi penting
+                        bagi perumusan Pancasila.</p>
+                    <p>Dalam sidang ini, berbagai gagasan dan pandangan muncul, mencerminkan keragaman budaya dan nilai-nilai yang ada di Indonesia. Sidang ini menandai awal dari perjalanan panjang menuju kemerdekaan dan pembentukan negara.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section 2 -->
+    <section class="section" id="section2">
+        <div class="section-content">
+            <h2>1 Juni 1945 - Soekarno Mengusulkan Pancasila</h2>
+            <div class="content-wrapper">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Soekarno_%28cropped%29.jpg/800px-Soekarno_%28cropped%29.jpg"
+                    alt="Soekarno Mengusulkan Pancasila">
+                <div class="text-content">
+                    <p>Dalam sidang kedua BPUPKI, Soekarno menyampaikan usulannya mengenai lima prinsip dasar yang dikenal sebagai Pancasila. Usulan ini mendapat perhatian luas dan menjadi topik diskusi utama di kalangan anggota BPUPKI.</p>
+                    <p>Pancasila terdiri dari nilai-nilai dasar yang mencerminkan cita-cita bangsa, seperti ketuhanan, kemanusiaan, persatuan, demokrasi, dan keadilan sosial. Ide ini kemudian dijadikan dasar negara Indonesia yang resmi pada 18 Agustus 1945.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section 3 -->
+    <section class="section" id="section3">
+        <div class="section-content">
+            <h2>22 Juni 1945 - Piagam Jakarta</h2>
+            <div class="content-wrapper">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Naskah_Piagam_Jakarta.jpg"
+                    alt="Piagam Jakarta">
+                <div class="text-content">
+                    <p>Pada tanggal ini, Panitia Sembilan yang dibentuk BPUPKI menghasilkan Piagam Jakarta, sebuah dokumen yang mencantumkan prinsip-prinsip dasar negara, termasuk Pancasila. Piagam ini menjadi salah satu dokumen penting dalam sejarah pembentukan
+                        negara Indonesia.</p>
+                    <p>Piagam Jakarta mencerminkan kesepakatan antar kelompok di Indonesia dalam merumuskan dasar negara. Meskipun mengalami perubahan, dokumen ini menjadi fondasi awal bagi konstitusi Indonesia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section 4 -->
+    <section class="section" id="section4">
+        <div class="section-content">
+            <h2>18 Agustus 1945 - Pancasila Diresmikan</h2>
+            <div class="content-wrapper">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Soekarno_Hatta_Proklamasi.jpg"
+                    alt="Pengesahan Pancasila">
+                <div class="text-content">
+                    <p>Setelah melalui berbagai diskusi dan perubahan, Pancasila akhirnya diresmikan sebagai dasar negara Indonesia pada 18 Agustus 1945, sehari setelah proklamasi kemerdekaan. Pengesahan ini dilakukan oleh Panitia Persiapan Kemerdekaan Indonesia
+                        (PPKI).</p>
+                    <p>Pancasila menjadi dasar bagi segala hukum dan peraturan di Indonesia. Lima sila dalam Pancasila mencerminkan nilai-nilai luhur bangsa Indonesia yang menjadi pedoman hidup berbangsa dan bernegara.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scroll to Top Script -->
+    <script>
+         // Scroll Animation with GSAP
+         gsap.registerPlugin(ScrollTrigger);
+
+const sections = document.querySelectorAll(".section");
+sections.forEach((section) => {
+    gsap.from(section, {
+        scale: 0.8,
+        opacity: 0.6,
+        duration: 1,
+        scrollTrigger: {
+            trigger: section,
+            start: "top 90%",
+            end: "bottom 50%",
+            toggleActions: "play none none none",
+            onEnter: () => {
+                gsap.to(section, {
+                    scale: 1,
+                    opacity: 1,
+                    duration: 0.5,
+                });
+            },
+            onLeave: () => {
+                gsap.to(section, {
+                    scale: 0.8,
+                    opacity: 0.6,
+                    duration: 0.5,
+                });
+            },
+            onEnterBack: () => {
+                gsap.to(section, {
+                    scale: 1,
+                    opacity: 1,
+                    duration: 0.5,
+                });
+            },
+            onLeaveBack: () => {
+                gsap.to(section, {
+                    scale: 0.8,
+                    opacity: 0.6,
+                    duration: 0.5,
+                });
+            }
+        }
+    });
+});
+
+// Scroll to Top Button Logic
+const scrollTopBtn = document.getElementById("scrollTopBtn");
+window.addEventListener("scroll", () => {
+    scrollTopBtn.style.display = window.scrollY > 300 ? "block" : "none";
+
+    // Update progress bar
+    const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPosition = window.scrollY;
+    const progressWidth = (scrollPosition / scrollTotal) * 100;
+    document.getElementById("progressBar").style.width = progressWidth + "%";
+});
+
+// Smooth scroll to top
+scrollTopBtn.addEventListener("click", () => {
+    gsap.to(window, { scrollTo: 0, duration: 1 });
+});
+    </script>
+
+
+<!-- Footer Section -->
+<footer style="background-color: #000000; color: #ffffff; text-align: center;  position: relative; bottom: 0; width: 100%;">
+    <p>&copy; 2024 - Proses Perumusan dan Penetapan Pancasila. All rights reserved.</p>
+</footer>
+
+</body>
+
+</html>
