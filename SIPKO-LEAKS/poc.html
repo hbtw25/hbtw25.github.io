@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Table</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        h1 {
+            color: #495057;
+            font-weight: bold;
+        }
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            background-color: #ffffff;
+            font-size: 1.1rem;
+        }
+        table th {
+            background-color: #007bff;
+            color: #ffffff;
+            text-align: center;
+        }
+        table td {
+            vertical-align: middle;
+        }
+        table td a {
+            color: #007bff;
+            font-weight: 500;
+        }
+        table td a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        .dataTables_wrapper {
+            font-size: 1.1rem;
+        }
+        .description {
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .disclaimer {
+            background-color: #f8d7da;
+            border: 1px solid #f5c2c7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        footer {
+            margin-top: 2rem;
+            padding: 1rem 0;
+            background-color: #ffffff;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .table-responsive {
+        overflow-x: auto; /* Tambahkan scroll horizontal */
+        -webkit-overflow-scrolling: touch; /* Halus pada perangkat mobile */
+    }
+    @media (max-width: 768px) {
+        table thead th {
+            font-size: 0.9rem; /* Perkecil font header */
+        }
+        table td {
+            font-size: 0.9rem; /* Perkecil font data */
+        }
+
+        .truncate-title {
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Kerentanan (Sistem Informasi Pengumuman Kelulusan Online 1.0) Domain Analisis</h1>
+    
+        <div class="description">
+            <p>🔍 Halaman ini memuat hasil analisis mendalam terkait *Open Source Project* <b>Sistem Informasi Pengumuman Kelulusan Online 1.0</b>, yang diketahui memiliki kerentanan <b>CSRF</b> dan <b>Stored XSS</b>. Data yang ditampilkan telah diproses untuk menyertakan informasi geografis dan jaringan, dengan tujuan mendukung riset keamanan.</p>
+            
+            <h3>⚠️ Tentang Kerentanan</h3>
+            <p>Sistem Informasi Pengumuman Kelulusan Online 1.0 adalah aplikasi web berbasis <i>open source</i> yang rentan terhadap serangan CSRF dan Blind XSS. Ancaman ini dapat dimanfaatkan untuk:</p>
+            <ul>
+                <li>Dengan kerentanan ini, dapat menambahkan "user" tidak berwenang sebagai admin ke sistem. <i>(CSRF - Cross-Site Request Forgery )</i></li>
+                <li>Menanamkan skrip berbahaya yang dapat mencuri informasi atau meretas akun pengguna. dan melakukan <b>DEFACEMENT</b> <i>( Stored Cross-Site Scripting - Content Injection)</i></li>
+            </ul>
+            <p>Oleh karena itu, penggunaan aplikasi ini perlu dihentikan atau segera diperbarui untuk mencegah pelanggaran data lebih lanjut.</p>
+        </div>
+    
+        <div class="disclaimer">
+            <h4>⚠️ Disclaimer</h4>
+            <p>📌 Data ini disediakan hanya untuk tujuan <b>riset keamanan</b>. Semua informasi yang disampaikan sudah dipublikasikan secara terbuka. Harap gunakan data ini untuk membantu organisasi menilai risiko dan mengambil langkah-langkah pencegahan yang diperlukan.</p>
+            <p><b>Jika organisasi Anda terdampak, lakukan langkah-langkah berikut sesegera mungkin:</b></p>
+            <ul>
+                <li>🛑 Segera hentikan penggunaan aplikasi ini dan migrasi ke sistem yang lebih aman.</li>
+                <li>🔍 Lakukan audit keamanan secara menyeluruh.</li>
+                <li>🕵️ Pantau aktivitas mencurigakan di jaringan Anda.</li>
+            </ul>
+            <p>⚠️ <b>Catatan:</b> Penulis tidak bertanggung jawab atas penyalahgunaan informasi ini untuk tujuan jahat.</p>
+        </div>
+
+        <div class="resources">
+            <h3>📂 Resource</h3>
+            <p>Untuk informasi lebih lanjut dan detail kerentanan, Anda dapat mengakses sumber daya berikut:</p>
+            <ul>
+                <li>📄 <a href="https://github.com/hbtw25/SIPKO-LEAKS/tree/main" target="_blank">Repository SIPKO-LEAKS di GitHub</a> <b>UNDER DEVELOPMENT</b></li>
+                <li>📋 Dokumentasi terkait kerentanan CSRF dan Blind XSS (tersedia di dalam repository).</li>
+            </ul>
+            <p>Sumber daya ini dapat membantu organisasi atau individu yang terdampak untuk memahami dan menangani risiko lebih lanjut. Harap gunakan secara bertanggung jawab.</p>
+        </div>
+        
+
+        <div class="table-container">
+            <div class="table-responsive">
+                <table id="dataTable" class="table table-striped table-hover w-100">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Title</th>
+                            <th>Link</th>
+                            <th>ip</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be dynamically generated -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Researched by  <a href="https://www.linkedin.com/in/harsya-brahmantyo-w/" target="_blank">Harsya Brahmantyo w</a>. &copy; 2025</p>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- PapaParse JS for reading CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js"></script>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Path to the CSV file
+        const csvFilePath = 'https://raw.githubusercontent.com/hbtw25/hbtw25.github.io/refs/heads/main/poc/hasil_google_search.csv';
+
+        // Function to get IP address from a URL using Google DNS API
+        async function getIPFromURL(url) {
+            try {
+                const apiEndpoint = `https://dns.google/resolve?name=${new URL(url).hostname}`;
+                const response = await fetch(apiEndpoint);
+                const data = await response.json();
+                if (data && data.Answer && data.Answer[0]) {
+                    return data.Answer[0].data; // Return the IP address
+                }
+            } catch (error) {
+                console.error(`Error fetching IP for ${url}:`, error);
+            }
+            return 'IP not found'; // Fallback if no IP is found
+        }
+
+        // Function to truncate text for mobile view
+        function truncateTextForMobile() {
+            if (window.innerWidth <= 768) { // Check if mobile
+                const titleCells = document.querySelectorAll('.truncate-title');
+                titleCells.forEach(cell => {
+                    const originalText = cell.dataset.original; // Retrieve the full text
+                    const maxLength = 20; // Max characters for mobile
+                    cell.textContent = originalText.length > maxLength ? originalText.slice(0, maxLength) + '...' : originalText;
+                });
+            }
+        }
+
+        // Function to load and display CSV data
+        $(document).ready(function() {
+            Papa.parse(csvFilePath, {
+                download: true,
+                header: true,
+                complete: async function(results) {
+                    const data = results.data;
+                    const tableBody = $('#dataTable tbody');
+
+                    let id = 1; // Initialize ID counter
+
+                    // Process each row to add URL and IP
+                    for (const row of data) {
+                        if (row.Title && row.Link) { // Ensure valid data
+                            const ip = await getIPFromURL(row.Link);
+                            tableBody.append(`
+                                <tr>
+                                    <td>${id++}</td>
+                                    <td class="truncate-title" data-original="${row.Title}">${row.Title}</td>
+                                    <td><a href="${row.Link}" target="_blank">${row.Link}</a></td>
+                                    <td>${ip}</td>
+                                </tr>
+                            `);
+                        }
+                    }
+
+                    // Initialize DataTables
+                    $('#dataTable').DataTable({
+                        paging: true,
+                        searching: true,
+                        info: true,
+                        responsive: true,
+                        autoWidth: false,
+                        scrollX: true,
+                        language: {
+                            search: "Search:",
+                            paginate: {
+                                previous: "Prev",
+                                next: "Next"
+                            }
+                        }
+                    });
+
+                    // Apply truncation for mobile
+                    truncateTextForMobile();
+                }
+            });
+
+            // Reapply truncation on window resize
+            window.addEventListener('resize', truncateTextForMobile);
+        });
+
+
+
+        // SweetAlert2 welcome alert
+    window.onload = function () {
+        Swal.fire({
+    title: 'Selamat Datang di <br>Halaman Riset! 🎉',
+    text: 'Halaman ini dibuat oleh Harsya Brahmantyo Wibowo untuk mendukung riset keamanan. Jangan lupa follow LinkedIn saya, ya! 😊',
+    icon: 'info',
+    confirmButtonText: 'Siap! 🚀',
+    footer: '<a href="https://www.linkedin.com/in/harsya-brahmantyo-w/" target="_blank">Kunjungi Profil LinkedIn</a> 💼'
+});
+
+};
+
+    </script>
+</body>
+</html>
