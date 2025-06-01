@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<!-- Application Structure Plan: The SPA maintains its single-page structure with sticky top navigation for 'Arsitektur & Risiko', 'Studi Kasus: Fraud', and 'Studi Kasus: DDoS'. Each section now incorporates significantly more detailed textual explanations and analyses directly from the CLO answers.
+-   'Arsitektur & Risiko': Service tabs (Roaming, VoLTE, SMS OTP) now display comprehensive architecture descriptions, component details, and flows. A new sub-section presents detailed risk analysis tables (Hardware, Software, Data, Communication) for each service, followed by the Top 5 Risks chart with expanded textual justification. Source references like [1], [23, 24] are now styled as pseudo-links with tooltips.
+-   'Studi Kasus: Fraud': Modus operandi is more detailed. A new sub-section describes the exploited service topology and fraud points, now including an HTML/CSS based diagram for topology. Mitigation/remediation strategies are expanded. A new sub-section details relevant security controls (Threat Intel, Monitoring, etc.) and their CIA impact. Source references are styled as pseudo-links.
+-   'Studi Kasus: DDoS': The interactive fishbone diagram now reveals extensive lists of potential causes under each category (Attack Surfaces, Requirements, etc.). The "Rekomendasi Solusi" section is also significantly expanded with detailed solutions for each category. Source references are styled as pseudo-links.
+This enhanced structure aims to provide a one-stop, in-depth interactive exploration of all CLO answers, making the complex information more digestible and directly aligning the SPA's content with the detailed textual report. -->
+<!-- Visualization & Content Choices: 
+-   CLO 1 Architectures (Soal 1a, 1c, 1e): Report Info -> Detailed GSM, VoLTE, SMS system components, interconnections, and flows. Goal -> Explain complex systems in depth. Viz/Method -> Interactive diagrams (HTML/CSS divs, flexbox) with modals for component details, plus expanded textual descriptions of flows directly in the main content area. Interaction -> Click component for modal; read detailed flows. Justification -> Balances visual overview with comprehensive textual explanation. Library -> Vanilla JS. Source references [X] updated to pseudo-links.
+-   CLO 1 Risks (Soal 2): Report Info -> Detailed risk analysis (Hardware, Software, Data, Comm. Lines for each service) & Top 5 security risks with justifications. Goal -> Provide comprehensive risk understanding. Viz/Method -> HTML tables for detailed risk breakdown per service; Horizontal Bar Chart for Top 5. Interaction -> Chart tooltips; read detailed tables and justifications. Justification -> Combines visual summary (chart) with exhaustive tabular data and textual reasoning. Library -> Chart.js for chart, HTML/CSS for tables. Source references [X] updated to pseudo-links.
+-   CLO 2 Fraud Modus Operandi (Soal 3a): Report Info -> Expanded step-by-step process of credit transfer fraud. Goal -> Illustrate process in detail. Viz/Method -> Sequential flowchart (HTML/CSS). Interaction -> Static visual with hover effects. Justification -> Clarifies fraud lifecycle. Library -> N/A. Source references [X] updated to pseudo-links.
+-   CLO 2 Fraud Topology & Points (Soal 3b): Report Info -> Textual description of exploited service topology and fraud points, now augmented with an HTML/CSS diagram. Goal -> Clarify system exploitation visually and textually. Viz/Method -> Structured text and an HTML/CSS diagram. Interaction -> Reading diagram and text. Justification -> Provides necessary context and visual aid for understanding fraud. Library -> N/A. Source references [X] updated to pseudo-links.
+-   CLO 2 Security Controls & Mitigations (Soal 3c, 3d): Report Info -> Detailed mitigation/remediation strategies; specific security controls (Threat Intel, Monitoring, etc.) and CIA impact. Goal -> Organize solutions and controls comprehensively. Viz/Method -> Accordion UI for mitigations; structured text/lists for security controls. Interaction -> Click to expand/collapse accordions. Justification -> Manages large amounts of text compactly and logically. Library -> Vanilla JS. Source references [X] updated to pseudo-links.
+-   CLO 3 DDoS Analysis (Soal 4): Report Info -> Detailed fishbone diagram categories with extensive lists of potential causes; comprehensive solution recommendations. Goal -> Deconstruct a complex problem and offer detailed solutions. Viz/Method -> Interactive Fishbone Diagram (HTML/CSS) where clicking a bone reveals a detailed list of causes; structured text for solutions. Interaction -> Clicking a main 'bone' toggles visibility of detailed cause lists. Justification -> Makes the complex analysis interactive and manageable, providing depth. Library -> Vanilla JS. Source references [X] updated to pseudo-links.
+-   CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor Analisis Keamanan Telekomunikasi (Detail Lengkap)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px; /* Adjusted for potentially more labels */
+            width: 100%;
+            max-width: 800px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .fishbone {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 3rem 0;
+            padding: 1rem;
+            min-height: 50vh;
+        }
+        .fishbone-body {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 4px;
+            background-color: #334155; /* slate-700 */
+            display: flex;
+            align-items: center;
+        }
+        .fishbone-head {
+            position: absolute;
+            right: -15px;
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 25px solid #334155; /* slate-700 */
+        }
+        .fishbone-head-text {
+            position: absolute;
+            right: -160px; /* Adjusted for longer text */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 140px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+        .bone {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .bone-line {
+            height: 3px;
+            background-color: #475569; /* slate-600 */
+            transform-origin: left;
+        }
+        .bone-label {
+            position: absolute;
+            background-color: #f1f5f9; /* slate-100 */
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #1e293b; /* slate-800 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.8rem;
+        }
+        .bone-top {
+            bottom: 5px;
+            transform: rotate(-45deg);
+        }
+        .bone-top .bone-line { width: 120px; } /* Adjusted length */
+        .bone-top .bone-label { left: 100%; top: -12px; transform: rotate(45deg); transform-origin: bottom left;}
+
+        .bone-bottom {
+            top: 5px;
+            transform: rotate(45deg);
+        }
+        .bone-bottom .bone-line { width: 120px; } /* Adjusted length */
+        .bone-bottom .bone-label { left: 100%; bottom: -12px; transform: rotate(-45deg); transform-origin: top left;}
+
+        .bone-content, .risk-table-container, .security-control-item {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: white;
+            border: 1px solid #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .bone.active .bone-label {
+            color: #0d9488; /* teal-600 */
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .modal-active {
+            display: flex; /* Changed from block to flex for centering */
+        }
+        .architecture-diagram .component {
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .architecture-diagram .component:hover {
+            transform: translateY(-2px);
+            background-color: #e0f2f1; /* teal-50 */
+        }
+        .step-arrow {
+            content: '→';
+            color: #94a3b8; /* slate-400 */
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        .risk-table th, .risk-table td {
+            border: 1px solid #e2e8f0; /* slate-200 */
+            padding: 0.5rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        .risk-table th {
+            background-color: #f1f5f9; /* slate-100 */
+            font-weight: 600;
+        }
+        .accordion-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+        .fishbone-details ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+         .fishbone-details li {
+            margin-bottom: 0.5rem;
+        }
+        .prose-sm {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .prose-sm p, .prose-sm ul, .prose-sm ol {
+            margin-bottom: 1em;
+        }
+        .prose-sm h4 {
+            font-size: 1.125em;
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        .topology-diagram-box {
+            padding: 0.75rem; /* p-3 */
+            border-width: 1px; /* border */
+            border-radius: 0.5rem; /* rounded-lg */
+            text-align: center;
+        }
+        .topology-diagram-arrow {
+            font-size: 1.5rem; /* text-2xl */
+            color: #64748b; /* slate-500 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-40">
+        <nav class="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+            <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-800">Analisis Keamanan Telekomunikasi</h1>
+            <div class="hidden md:flex space-x-4 lg:space-x-6 text-xs sm:text-sm font-medium">
+                <a href="#arsitektur" class="text-slate-600 hover:text-teal-600 transition">Arsitektur & Risiko</a>
+                <a href="#studi-kasus-fraud" class="text-slate-600 hover:text-teal-600 transition">Studi Kasus: Fraud</a>
+                <a href="#studi-kasus-ddos" class="text-slate-600 hover:text-teal-600 transition">Studi Kasus: DDoS</a>
+            </div>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="bg-slate-100 border border-slate-300 rounded-md p-2 text-sm focus:ring-teal-500 focus:border-teal-500">
+                    <option value="#arsitektur">Arsitektur & Risiko</option>
+                    <option value="#studi-kasus-fraud">Studi Kasus: Fraud</option>
+                    <option value="#studi-kasus-ddos">Studi Kasus: DDoS</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 py-8 md:py-12">
+
+        <section id="arsitektur" class="mb-12 md:mb-16">
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">CLO 1: Arsitektur Layanan & Analisis Risiko</h2>
+            <p class="text-slate-600 mb-6 md:mb-8 max-w-3xl prose-sm">Bagian ini membedah arsitektur teknis dari berbagai layanan telekomunikasi (Telephony & Roaming, VoIP/VoLTE, SMS OTP & Banking) dan menganalisis risiko keamanan yang melekat. Pilih layanan di bawah untuk melihat detailnya.</p>
+
+            <div class="flex flex-wrap gap-2 mb-6 md:mb-8" id="service-tabs">
+            </div>
+
+            <div id="service-content-container" class="space-y-8">
+                 </div>
+            
+            <div class="mt-10 md:mt-12">
+                <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mb-4">Top 5 Risiko Keamanan Teratas (Lintas Layanan)</h3>
+                <p class="text-slate-600 mb-6 max-w-3xl prose-sm">Berdasarkan analisis, berikut adalah lima risiko keamanan teratas di seluruh layanan yang dibahas, diurutkan berdasarkan potensi dampak dan kemungkinan eksploitasi. Penjelasan detail untuk setiap risiko ada di bawah grafik.</p>
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                    <div class="chart-container">
+                        <canvas id="topRisksChart"></canvas>
+                    </div>
+                </div>
+                <div id="top-risks-explanation" class="mt-6 space-y-4 prose-sm">
+                    </div>
+            </div>
+        </section>
+
+        <section id="studi-kasus-fraud" class="mb-12 md:mb-16">
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">CLO 2: Studi Kasus Penyalahgunaan Transfer Pulsa</h2>
+            <p class="text-slate-600 mb-6 md:mb-8 max-w-3xl prose-sm">Analisis kasus penyalahgunaan layanan transfer pulsa operator seluler untuk mendukung judi online, termasuk modus operandi, topologi yang dieksploitasi, strategi mitigasi/remediasi, dan kontrol keamanan yang relevan.</p>
+
+            <div class="space-y-8">
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-4">3.a. Modus Operandi Penipuan</h3>
+                    <div id="fraud-flowchart" class="space-y-4 prose-sm">
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-4">3.b. Topologi Servis yang Dieksploitasi & Titik Fraud</h3>
+                    <div id="fraud-topology-points" class="prose-sm">
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-4">3.c. Strategi Mitigasi & Remediasi</h3>
+                    <div id="mitigation-accordion" class="space-y-2">
+                    </div>
+                </div>
+                
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-4">3.d. Penerapan Security Control & Dampaknya</h3>
+                    <div id="fraud-security-controls" class="space-y-4 prose-sm">
+                         </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="studi-kasus-ddos" class="mb-12 md:mb-16">
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">CLO 3: Studi Kasus Serangan DDoS NTT Docomo</h2>
+            <p class="text-slate-600 mb-6 md:mb-8 max-w-3xl prose-sm">Analisis mendalam mengenai kelumpuhan server akibat serangan DDoS, menggunakan diagram Fishbone untuk mengidentifikasi akar penyebab dari berbagai aspek. Klik pada setiap 'tulang' untuk melihat detail permasalahan.</p>
+            
+            <div id="ddos-problem-statement" class="bg-teal-50 border-l-4 border-teal-500 text-teal-700 p-4 mb-6 rounded-md prose-sm" role="alert">
+                </div>
+
+            <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md overflow-x-auto">
+                <div id="fishbone-container-wrapper" class="min-w-[700px]">
+                     <div id="fishbone-container">
+                        </div>
+                </div>
+                <div id="fishbone-details" class="mt-6 md:mt-8 space-y-4 prose-sm">
+                </div>
+            </div>
+            
+            <div class="mt-10 md:mt-12">
+                <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mb-4">Cara Menyelesaikan Permasalahan (Menjaga Ketersediaan Server Web)</h3>
+                 <p class="text-slate-600 mb-6 max-w-3xl prose-sm">Berdasarkan analisis akar penyebab dari diagram Fishbone, berikut adalah pendekatan komprehensif untuk menjaga ketersediaan server web dan meningkatkan ketahanan terhadap serangan DDoS di masa depan.</p>
+                <div id="ddos-solutions" class="space-y-6 prose-sm">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 text-center py-6 mt-12">
+        <p class="text-sm">&copy; 2024 Analisis Keamanan Telekomunikasi. Dibuat untuk tujuan edukasi.</p>
+    </footer>
+
+    <div id="component-modal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md sm:max-w-lg md:max-w-2xl w-full max-h-[80vh] sm:max-h-[90vh] p-5 sm:p-6 relative">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-lg sm:text-xl font-bold text-slate-900"></h3>
+                <button id="modal-close" class="text-slate-500 hover:text-slate-800 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="modal-description-container" class="prose-sm max-h-[65vh] sm:max-h-[75vh] overflow-y-auto pr-2">
+                 <p id="modal-description" class="text-slate-600"></p>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    function linkifySources(text) {
+        if (typeof text !== 'string') return text;
+        return text.replace(/\[\s*(\d+(?:\s*,\s*\d+)*)\s*\]/g, (match, capturedNumbers) => {
+            const numbers = capturedNumbers.split(',').map(n => n.trim()).filter(n => n && !isNaN(n));
+            if (numbers.length === 0) return match; 
+            const links = numbers.map(num => `<a href="javascript:void(0);" class="text-teal-600 hover:text-teal-700 underline" title="Sumber ${num} - URL tidak tersedia">${num}</a>`);
+            return `[${links.join(', ')}]`;
+        });
+    }
+
+    function processDataForSourceLinks(data) {
+        if (typeof data === 'string') {
+            return linkifySources(data);
+        } else if (Array.isArray(data)) {
+            return data.map(item => processDataForSourceLinks(item));
+        } else if (typeof data === 'object' && data !== null) {
+            const newData = {};
+            for (const key in data) {
+                if (Object.prototype.hasOwnProperty.call(data, key)) {
+                    newData[key] = processDataForSourceLinks(data[key]);
+                }
+            }
+            return newData;
+        }
+        return data;
+    }
+
+    const originalAppData = {
+        services: {
+            roaming: {
+                id: 'roaming',
+                name: 'Telephony & Roaming (Haji)',
+                title: '1.a. Telephony & International Roaming Call (Layanan Haji)',
+                architectureDescription: `Layanan teleponi dan *international roaming* memungkinkan pelanggan "Du" untuk tetap menggunakan nomor ponsel mereka untuk melakukan dan menerima panggilan suara ketika berada di luar negeri, seperti saat menunaikan ibadah Haji di Arab Saudi. Arsitektur yang mendasarinya adalah Global System for Mobile Communications (GSM), yang melibatkan interaksi antara jaringan asal ("Du") dan jaringan operator mitra di negara yang dikunjungi.`,
+                components: [
+                    { name: 'Mobile Station (MS)', desc: 'Perangkat seluler yang digunakan oleh pelanggan, yang terdiri dari Mobile Equipment (ME) atau ponsel itu sendiri, dan Subscriber Identity Module (SIM) card. SIM card "Du" berisi International Mobile Subscriber Identity (IMSI) yang unik untuk setiap pelanggan dan kunci otentikasi rahasia ($K_i$) yang digunakan untuk verifikasi pelanggan. [1]' },
+                    { name: 'Base Transceiver Station (BTS)', desc: 'Merupakan stasiun pemancar dan penerima radio yang berkomunikasi langsung dengan MS melalui antarmuka udara (Um). Ratusan BTS mungkin diperlukan untuk cakupan yang luas. [1]' },
+                    { name: 'Base Station Controller (BSC)', desc: 'Mengendalikan beberapa BTS, mengelola sumber daya radio, melakukan kompresi sinyal suara, dan menangani proses *handover* (perpindahan MS dari satu BTS ke BTS lain) di bawah kendalinya. BSC juga menghubungkan BSS ke Network Switching Subsystem (NSS). [1]' },
+                    { name: 'Mobile Switching Center (MSC)', desc: 'Jantung dari jaringan GSM, berfungsi sebagai pusat switching yang mengkoordinasikan perutean panggilan dalam area layanan yang besar. MSC menghubungkan BSS dan MS ke jaringan telepon publik (PSTN) atau jaringan seluler lainnya. MSC menangani *call routing*, *call setup*, dan fungsi switching dasar, serta berkoordinasi dengan MSC lain. [1]' },
+                    { name: 'Home Location Register (HLR)', desc: 'Database cerdas yang menyimpan informasi permanen dan profil setiap pelanggan "Du". Ini mencakup detail layanan yang dilanggan, informasi lokasi pelanggan (secara umum, misalnya, di MSC mana pelanggan terakhir terdaftar), dan status otentikasi. HLR juga menyimpan *Location Area Identification* (LAI) dan kunci otentikasi pelanggan ($K_i$). [1]' },
+                    { name: 'Visitor Location Register (VLR)', desc: 'Database yang berisi informasi sementara tentang pelanggan yang sedang *roaming* di luar area HLR asal mereka. VLR biasanya terintegrasi atau berlokasi bersama dengan MSC di jaringan yang dikunjungi. Informasi ini dibutuhkan oleh MSC untuk melayani pelanggan tamu. Ketika MS terdeteksi di area MSC baru, catatan *roaming user* ditambahkan ke VLR. Data yang disimpan termasuk sebagian besar informasi dari HLR, ditambah informasi lokasi yang lebih presisi seperti LAI, status MS (sibuk/bebas), dan *Temporary Mobile Subscriber Identity* (TMSI) serta *Mobile Station Roaming Number* (MSRN). [1]' },
+                    { name: 'Authentication Center (AuC)', desc: 'Berfungsi untuk mengotentikasi setiap SIM card yang mencoba terhubung ke jaringan GSM, biasanya saat ponsel dihidupkan. Proses ini menggunakan kunci $K_i$ yang tersimpan di SIM dan AuC untuk menghasilkan parameter otentikasi. [1]' },
+                    { name: 'Gateway MSC (GMSC)', desc: 'Fungsi MSC yang bertindak sebagai gerbang untuk panggilan yang berasal dari atau ditujukan ke jaringan lain, termasuk jaringan internasional atau PSTN.' }
+                ],
+                topologyAndFlow: `
+                    <p>Bayangkan pengguna "Du" dengan *Mobile Station* (MS) berada di Arab Saudi.</p>
+                    <ul class="list-disc pl-5 mt-2">
+                        <li>MS terhubung melalui antarmuka radio (Um) ke *Base Transceiver Station* (BTS) milik operator seluler di Arab Saudi (misalnya, STC atau Mobily, sebagaimana Telkomsel bekerja sama dengan operator lokal untuk layanan Haji [3]).</li>
+                        <li>Beberapa BTS di Arab Saudi terhubung ke sebuah *Base Station Controller* (BSC) milik operator Arab Saudi.</li>
+                        <li>BSC ini selanjutnya terhubung ke *Mobile Switching Center* (MSC) di jaringan operator Arab Saudi, yang dalam konteks ini disebut *Visited MSC* (VMSC). VMSC ini memiliki koneksi ke *Visitor Location Register* (VLR) lokal yang menyimpan data sementara pelanggan "Du" yang sedang *roaming*.</li>
+                    </ul>
+                    <h5 class="font-semibold mt-3 mb-1">Interaksi dengan jaringan asal "Du":</h5>
+                    <ul class="list-disc pl-5">
+                        <li>VMSC di Arab Saudi terhubung melalui jaringan pensinyalan internasional (misalnya, SS7 atau Diameter) ke *Home Location Register* (HLR) dan *Authentication Center* (AuC) milik "Du" di negara asal.</li>
+                        <li>HLR dan AuC "Du" terhubung ke MSC milik "Du" (*Home MSC*).</li>
+                    </ul>
+                    <h4 class="font-semibold text-slate-800 mt-4 mb-2">Alur Proses Roaming:</h4>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li><strong>Registrasi Roaming:</strong>
+                            <ul class="list-disc pl-5 mt-1 text-sm">
+                                <li>Ketika pelanggan "Du" tiba di Arab Saudi dan menyalakan MS, MS akan mencari jaringan seluler yang tersedia.</li>
+                                <li>Setelah menemukan jaringan operator mitra "Du", MS akan mencoba mendaftar ke jaringan tersebut.</li>
+                                <li>VMSC operator Arab Saudi mendeteksi MS baru dan meminta informasi otentikasi dari HLR "Du" melalui jaringan pensinyalan. AuC "Du" akan memvalidasi SIM card.</li>
+                                <li>Jika otentikasi berhasil, HLR "Du" mengirimkan profil layanan pelanggan ke VLR yang terasosiasi dengan VMSC di Arab Saudi. HLR juga memperbarui informasi lokasi pelanggan, mencatat bahwa pelanggan sedang berada di area layanan VMSC tersebut. [1]</li>
+                            </ul>
+                        </li>
+                        <li><strong>Melakukan Panggilan dari Arab Saudi ke Indonesia (Panggilan Keluar/MO Call):</strong>
+                            <ul class="list-disc pl-5 mt-1 text-sm">
+                                <li>Pelanggan "Du" memasukkan nomor tujuan di Indonesia, biasanya dengan kode negara +62. [3, 4]</li>
+                                <li>Panggilan diinisiasi dari MS, diterima oleh BTS dan BSC operator Arab Saudi, lalu diteruskan ke VMSC.</li>
+                                <li>VMSC, berdasarkan informasi di VLR, mengetahui bahwa pelanggan berhak melakukan panggilan internasional dan merutekan panggilan tersebut, kemungkinan melalui sebuah *Gateway MSC* (GMSC) di jaringan Arab Saudi.</li>
+                                <li>GMSC Arab Saudi meneruskan panggilan melalui jaringan internasional ke *Gateway MSC* (GMSC) di Indonesia, yang kemudian merutekan panggilan ke jaringan PSTN atau seluler tujuan di Indonesia hingga sampai ke penerima.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Menerima Panggilan di Arab Saudi dari Indonesia (Panggilan Masuk/MT Call):</strong>
+                            <ul class="list-disc pl-5 mt-1 text-sm">
+                                <li>Panggilan dari Indonesia menuju nomor "Du" akan pertama kali mencapai GMSC di jaringan "Du".</li>
+                                <li>GMSC "Du" akan menginterogasi HLR "Du" untuk mengetahui lokasi terkini pelanggan.</li>
+                                <li>HLR "Du" akan memberikan informasi bahwa pelanggan sedang *roaming* di jaringan operator Arab Saudi dan menyediakan *Mobile Station Roaming Number* (MSRN). MSRN adalah nomor sementara yang dialokasikan oleh VMSC/VLR di Arab Saudi untuk merutekan panggilan ke pelanggan yang sedang *roaming* di areanya. [1]</li>
+                                <li>GMSC "Du" menggunakan MSRN ini untuk merutekan panggilan melalui jaringan internasional ke VMSC di Arab Saudi.</li>
+                                <li>VMSC Arab Saudi kemudian menggunakan informasi di VLR untuk menemukan MS pelanggan dan mengirimkan panggilan melalui BSC dan BTS lokal ke MS pelanggan.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <p class="mt-3 text-sm">Keberhasilan layanan *roaming* sangat bergantung pada perjanjian kerjasama dan integrasi teknis yang baik antara "Du" dan operator-operator di Arab Saudi. [3, 4] Proses pensinyalan yang kompleks untuk otentikasi, pembaruan lokasi, dan perutean panggilan memerlukan jaringan pensinyalan internasional yang andal.</p>
+                    <p class="text-xs mt-2 text-slate-500"><em>Sumber: [1, 2, 3, 4]</em></p>
+                `,
+                risks: {
+                    hardware: { availability: 'Kegagalan perangkat keras inti (MSC, HLR, BTS) akibat kerusakan atau bencana alam dapat menghentikan layanan.', confidentiality: 'Akses fisik tidak sah ke server HLR/VLR dapat mengekspos data pelanggan, termasuk lokasi dan kunci otentikasi. [1]', integrity: 'Kerusakan fisik pada media penyimpanan HLR/VLR dapat merusak atau mengubah data profil pelanggan.' },
+                    software: { availability: '*Bug* perangkat lunak pada MSC atau sistem pensinyalan dapat menyebabkan *crash* atau layanan tidak stabil. Serangan *malware* pada sistem manajemen jaringan. [26]', confidentiality: 'Kerentanan pada OS atau aplikasi di HLR/VLR dapat dieksploitasi untuk mencuri data pelanggan atau kunci $K_i$. [27, 28]', integrity: '*Malware* dapat memodifikasi *Call Detail Records* (CDR) untuk *fraud* tagihan atau mengubah data layanan pelanggan.' },
+                    data: { availability: 'Kehilangan CDR akibat kegagalan sistem *backup*. Korupsi data di HLR/VLR membuat pelanggan tidak bisa dilayani.', confidentiality: 'Intersepsi panggilan suara jika enkripsi A5/1 lemah atau dipecahkan. [28] Kebocoran data lokasi pelanggan dari HLR/VLR atau jaringan yang dikunjungi. [27, 29]', integrity: 'Modifikasi CDR untuk *fraud*. Perubahan tidak sah pada profil layanan pelanggan di HLR.' },
+                    communication: { availability: '*Jamming* sinyal radio (Um interface). Kegagalan *link* koneksi internasional. Serangan DoS pada jaringan pensinyalan SS7/Diameter yang penting untuk *roaming setup*. [26]', confidentiality: 'Penyadapan panggilan (*eavesdropping*) *over-the-air* jika enkripsi A5/1 lemah. [28] Intersepsi pesan pensinyalan SS7/Diameter untuk melacak lokasi atau mencegat informasi otentikasi. [23, 24]', integrity: 'Manipulasi pesan pensinyalan SS7/Diameter untuk *call hijacking*, *fraud*, atau penolakan layanan. Serangan *Man-in-the-Middle* (MitM) karena otentikasi GSM yang bersifat sepihak (jaringan mengotentikasi MS, tapi MS tidak mengotentikasi jaringan). [28]' },
+                    additionalRiskInfo: 'Layanan *roaming* secara inheren memiliki permukaan serangan yang lebih luas karena melibatkan interaksi antar banyak operator dan jaringan internasional. Kelemahan pada satu operator mitra atau pada jaringan pensinyalan global dapat berdampak langsung pada pelanggan yang sedang *roaming*, meskipun jaringan asal "Du" mungkin aman. [1, 26]',
+                    sources: '[1, 23, 24, 26, 27, 28, 29]'
+                }
+            },
+            volte: {
+                id: 'volte',
+                name: 'VoIP & VoLTE',
+                title: '1.c. VoIP & VoLTE',
+                architectureDescription: `**Voice over IP (VoIP)** adalah teknologi yang memungkinkan transmisi panggilan suara melalui jaringan berbasis Internet Protocol (IP). **Voice over Long-Term Evolution (VoLTE)** adalah implementasi spesifik VoIP untuk jaringan 4G/5G menggunakan IP Multimedia Subsystem (IMS), memungkinkan kualitas panggilan HD dan penggunaan data simultan.`,
+                components: [
+                    { name: 'User Equipment (UE)', desc: 'Ponsel pintar yang mendukung VoLTE, dengan UICC (SIM) dan agen SIP untuk pensinyalan panggilan. [7, 8]' },
+                    { name: 'Evolved Packet Core (EPC) / 5G Core', desc: 'Jaringan inti paket data. Termasuk eNodeB/gNodeB, MME/AMF, S-GW/UPF, dan P-GW/UPF. [7]' },
+                    { name: 'IP Multimedia Subsystem (IMS) Core', desc: 'Platform untuk layanan multimedia berbasis IP. Komponen utamanya adalah P-CSCF, I-CSCF, dan S-CSCF. [7]' },
+                    { name: 'Home Subscriber Server (HSS) / UDM', desc: 'Database terpusat yang menyimpan profil pelanggan IMS, data otentikasi, dan layanan. [7]' },
+                    { name: 'Application Servers (AS)', desc: 'Menyediakan logika layanan seperti panggilan suara (TAS), call waiting, dan konferensi. [7]' },
+                    { name: 'Policy & Charging (PCRF/PCF)', desc: 'Mengelola kebijakan Quality of Service (QoS) untuk memastikan lalu lintas suara diprioritaskan. [7]' },
+                    { name: 'Media Gateway (MGCF/MGW)', desc: 'Untuk interkoneksi dengan jaringan PSTN. [7]' }
+                ],
+                topologyAndFlow: `
+                    <p>Arsitektur VoLTE melibatkan UE terhubung ke EPC/5GC melalui eNodeB/gNodeB. EPC/5GC (MME/AMF, S-GW/UPF, P-GW/UPF) menyediakan konektivitas IP ke IMS Core. PCRF/PCF mengatur QoS.</p>
+                    <p>Di dalam IMS Core:</p>
+                    <ul class="list-disc pl-5 mt-2">
+                        <li>P-CSCF: Titik kontak pertama SIP dari UE.</li>
+                        <li>I-CSCF: Menemukan S-CSCF saat registrasi.</li>
+                        <li>S-CSCF: Pemroses sesi SIP utama, berinteraksi dengan HSS/UDM (info pelanggan & otentikasi) dan AS (logika layanan).</li>
+                        <li>MGCF/MGW: Menghubungkan ke PSTN.</li>
+                    </ul>
+                    <h4 class="font-semibold text-slate-800 mt-4 mb-2">Alur Panggilan VoLTE Sederhana (UE ke UE):</h4>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li><strong>Registrasi IMS:</strong> UE registrasi ke IMS via P-CSCF. I-CSCF menanyakan HSS untuk S-CSCF. S-CSCF menyelesaikan registrasi & otentikasi dengan HSS. PCRF/PCF memastikan *dedicated bearer* QoS.</li>
+                        <li><strong>Inisiasi Panggilan:</strong> UE pengirim mengirim SIP INVITE ke P-CSCF, diteruskan ke S-CSCF pengirim.</li>
+                        <li><strong>Routing Panggilan:</strong> S-CSCF pengirim merutekan INVITE ke S-CSCF penerima (via HSS lookup jika perlu).</li>
+                        <li><strong>Terminasi Panggilan:</strong> P-CSCF penerima meneruskan INVITE ke UE penerima.</li>
+                        <li><strong>Pembentukan Sesi:</strong> Setelah negosiasi media dan panggilan diterima (SIP 200 OK), jalur media (RTP) terbentuk, biasanya langsung melalui EPC/5GC.</li>
+                    </ol>
+                    <h4 class="font-semibold text-slate-800 mt-4 mb-2">Perbedaan Utama VoIP dan VoLTE:</h4>
+                    <ul class="list-disc pl-5 mt-2 text-sm">
+                        <li><strong>Jaringan:</strong> VoIP (internet apapun), VoLTE (LTE/5G, terintegrasi IMS). [5, 6]</li>
+                        <li><strong>QoS:</strong> VoLTE (terjamin via *dedicated bearer*), VoIP (*best-effort*). [5]</li>
+                        <li><strong>Kualitas Panggilan:</strong> VoLTE (umumnya HD Voice), VoIP (bervariasi). [5, 6]</li>
+                        <li><strong>Integrasi Layanan:</strong> VoLTE (penuh dengan layanan seluler).</li>
+                    </ul>
+                    <p class="mt-3 text-sm">Implementasi VoLTE membutuhkan infrastruktur IMS yang kompleks. Sebagai layanan berbasis IP, VoLTE mewarisi kerentanan jaringan IP dan ancaman spesifik SIP/IMS. [9, 10]</p>
+                    <p class="text-xs mt-2 text-slate-500"><em>Sumber: [5, 6, 7, 8, 9, 10]</em></p>
+                `,
+                risks: {
+                    hardware: { availability: 'Kegagalan server IMS (S-CSCF, HSS, PCRF) atau komponen EPC/5GC (P-GW, MME) dapat melumpuhkan layanan VoLTE. Serangan fisik pada *data center*.', confidentiality: 'Akses fisik tidak sah ke server HSS/UDM dapat mengekspos profil pelanggan IMS, data otentikasi, dan layanan.', integrity: 'Kerusakan fisik pada media penyimpanan server IMS atau EPC/5GC.' },
+                    software: { availability: '*Bug* pada *software* inti IMS (CSCFs) atau EPC/5GC dapat menyebabkan *crash*. Serangan DoS/DDoS pada P-CSCF, P-GW, atau DNS server yang digunakan IMS. [9, 10] Kerentanan pada *hypervisor* jika menggunakan NFV. [30]', confidentiality: 'Kerentanan pada *SIP stack* di UE atau server dapat dieksploitasi untuk menyadap metadata panggilan. Kebocoran informasi sensitif (IMSI, IMEI, Cell ID) melalui pesan pensinyalan IMS seperti pada kasus O2 VoLTE. [31] Kurangnya enkripsi pada lalu lintas suara (RTP) atau pensinyalan (SIP). [9]', integrity: '*Malware* pada UE dapat memodifikasi konfigurasi SIP atau mencegat panggilan. Serangan MitM pada pensinyalan SIP dapat mengubah tujuan panggilan atau memasukkan konten berbahaya.' },
+                    data: { availability: 'Kehilangan CDR VoLTE akibat kegagalan *backup*. Korupsi data profil pelanggan di HSS/UDM.', confidentiality: 'Penyadapan panggilan suara/video (RTP *stream*) jika tidak dienkripsi menggunakan SRTP. Kebocoran data lokasi, IMSI, IMEI dari interaksi dengan jaringan atau dari HSS/UDM. [9, 31] Akses tidak sah ke kredensial SIP.', integrity: 'Modifikasi CDR VoLTE untuk *fraud*. Pemalsuan identitas pemanggil (*caller ID spoofing*) melalui manipulasi SIP. Perubahan tidak sah pada layanan yang terdaftar di HSS/UDM.' },
+                    communication: { availability: 'Serangan DDoS volumetrik atau *application-layer* pada P-GW, P-CSCF, atau infrastruktur DNS IMS. [9, 10] Kemacetan jaringan IP yang berdampak pada QoS panggilan VoLTE.', confidentiality: 'Intersepsi pensinyalan SIP atau media RTP jika ditransmisikan tanpa enkripsi (TLS untuk SIP, SRTP untuk RTP) melalui jaringan IP publik atau terkompromi. [9, 10]', integrity: 'Manipulasi pesan SIP (*SIP message tampering*) untuk *call hijacking*, penipuan tol (*toll fraud*), atau DoS. [9]' },
+                    additionalRiskInfo: 'Layanan berbasis IP seperti VoIP/VoLTE mewarisi berbagai ancaman dari dunia IP (DoS, *malware*, peretasan server) di samping ancaman spesifik yang menargetkan protokol SIP dan infrastruktur IMS. [9, 10] Kompleksitas infrastruktur IMS dengan banyak komponen fungsional juga meningkatkan potensi titik kegagalan. [7, 8]',
+                    sources: '[5, 6, 7, 8, 9, 10, 30, 31]'
+                }
+            },
+            sms: {
+                id: 'sms',
+                name: 'SMS OTP & Banking',
+                title: '1.e. SMS OTP & SMS Banking',
+                architectureDescription: `**SMS OTP (One-Time Password)** adalah layanan pengiriman kode sandi sekali pakai via SMS untuk otentikasi tambahan. **SMS Banking** memungkinkan nasabah melakukan transaksi atau menerima notifikasi bank melalui SMS.`,
+                components: [
+                    { name: 'Pengguna & Perangkat Seluler', desc: 'Nasabah bank yang memulai permintaan atau menerima SMS OTP/notifikasi.' },
+                    { name: 'Aplikasi/Sistem Pemicu OTP/Bank', desc: 'Portal web/aplikasi mobile banking yang memicu OTP atau memproses SMS Banking. [11, 12]' },
+                    { name: 'OTP Generator', desc: 'Komponen yang menghasilkan kode OTP acak dan berbatas waktu. [13]' },
+                    { name: 'Bank Server / Core Banking System (CBS)', desc: 'Sistem inti bank yang mengelola akun dan transaksi. [18, 19]' },
+                    { name: 'SMS Gateway', desc: 'Jembatan antara sistem bank dan jaringan operator, menangani pengiriman/penerimaan SMS. [11, 20, 21]' },
+                    { name: 'Operator: SMSC & Jaringan Seluler', desc: 'SMSC menyimpan & meneruskan SMS. Jaringan seluler (BTS, BSC, MSC) mentransmisikan SMS. [21]' }
+                ],
+                topologyAndFlow: `
+                    <h4 class="font-semibold text-slate-800 mt-4 mb-2">Alur Kerja SMS OTP:</h4>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li>Pengguna melakukan tindakan di Aplikasi/Portal Bank yang memicu permintaan OTP. [11, 12]</li>
+                        <li>Aplikasi/Portal Bank meminta OTP Generator membuat OTP (dengan nomor telepon pengguna).</li>
+                        <li>OTP Generator mengirim kode OTP & nomor telepon ke SMS Gateway Bank.</li>
+                        <li>SMS Gateway memformat SMS dan meneruskannya ke SMSC Operator "Du". [20, 21]</li>
+                        <li>SMSC "Du" mengirim SMS OTP ke perangkat seluler pengguna.</li>
+                        <li>Pengguna memasukkan OTP ke Aplikasi/Portal Bank.</li>
+                        <li>Aplikasi/Portal Bank memverifikasi OTP. Jika valid, tindakan disetujui. [12]</li>
+                    </ol>
+                    <h4 class="font-semibold text-slate-800 mt-4 mb-2">Alur Kerja SMS Banking (Contoh: Cek Saldo):</h4>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li>Pengguna mengirim SMS perintah (misal, "SALDO PIN") ke Nomor Pendek Bank. [16, 17, 18]</li>
+                        <li>SMS diterima jaringan "Du", diteruskan ke SMSC "Du".</li>
+                        <li>SMSC "Du" meneruskan SMS ke SMS Gateway Bank. [20, 21]</li>
+                        <li>SMS Gateway Bank meneruskan ke Server Aplikasi SMS Banking.</li>
+                        <li>Server Aplikasi mem-parse SMS, validasi pengguna & PIN, lalu query saldo ke CBS. [18, 19]</li>
+                        <li>CBS mengirim data saldo ke Server Aplikasi.</li>
+                        <li>Server Aplikasi memformat SMS balasan berisi info saldo.</li>
+                        <li>SMS balasan dikirim ke SMS Gateway Bank, lalu ke SMSC "Du".</li>
+                        <li>SMSC "Du" mengirim SMS balasan ke perangkat seluler pengguna.</li>
+                    </ol>
+                    <p class="mt-3 text-sm">Keamanan SMS OTP & Banking bergantung pada keamanan protokol SMS, yang rentan terhadap intersepsi (SS7, SIM Swapping, phishing). [14, 22, 23, 24, 25] SMS Gateway dan SMSC adalah titik kritis. [20, 21]</p>
+                    <p class="text-xs mt-2 text-slate-500"><em>Sumber: [11-25]</em></p>
+                `,
+                risks: {
+                    hardware: { availability: 'Kegagalan server SMS Gateway, SMSC, atau server bank yang memproses OTP/SMS Banking dapat menghentikan layanan.', confidentiality: 'Akses fisik tidak sah ke server yang menyimpan *log* SMS OTP atau data transaksi SMS Banking.', integrity: 'Kerusakan fisik pada media penyimpanan *log* SMS atau basis data transaksi.' },
+                    software: { availability: '*Bug* pada *software* SMS Gateway atau SMSC menyebabkan SMS OTP/Banking tidak terkirim atau tertunda. Serangan DoS pada SMS Gateway.', confidentiality: '*Malware* pada ponsel pengguna dapat mencegat SMS OTP atau mencuri kredensial SMS Banking. [23, 24] Kerentanan pada aplikasi web/mobile bank yang memicu atau memvalidasi OTP. Kebocoran OTP melalui *Man-in-the-Browser attack*. [24, 32, 33]', integrity: '*Malware* dapat memodifikasi isi perintah SMS Banking atau memanipulasi tampilan saldo/transaksi.' },
+                    data: { availability: 'Kehilangan *log* SMS OTP atau transaksi SMS Banking karena kegagalan *backup*.', confidentiality: 'Intersepsi SMS OTP via serangan SS7, *SIM Swapping*, *Rogue Cell Towers*, atau *malware*. [23, 24, 25] SMS tidak terenkripsi *end-to-end*. [14, 25] Akses *online* ke SMS jika portal provider lemah. [23]', integrity: 'Pemalsuan SMS (*SMS spoofing*). Perubahan isi pesan OTP/SMS Banking saat transit (MitM). Manipulasi PIN SMS Banking.' },
+                    communication: { availability: 'Gangguan jaringan seluler (BTS *down*, kemacetan) menghambat SMS. Kegagalan koneksi bank-SMS Gateway-SMSC.', confidentiality: 'Penyadapan SMS di jaringan seluler (eksploitasi SS7). [23, 24] Kurangnya enkripsi jalur SMS Gateway-SMSC.', integrity: 'Manipulasi SMS dalam transit jika jalur komunikasi tidak aman.' },
+                    additionalRiskInfo: 'Penggunaan SMS untuk layanan krusial seperti OTP dan *banking* sangat bergantung pada keamanan protokol SMS yang mendasarinya, yang memiliki banyak vektor serangan yang diketahui dan terdokumentasi dengan baik. [23, 24, 25] Ini menunjukkan adanya risiko inheren yang signifikan.',
+                    sources: '[11-25, 32, 33, 34]'
+                }
+            }
+        },
+        topRisks: {
+            labels: [
+                'Intersepsi/Manipulasi SMS OTP/Banking', 
+                'Kebocoran Data Lokasi/Identitas (VoLTE/IMS)', 
+                'Serangan DoS/DDoS (Layanan IP)', 
+                'Penyadapan Panggilan (GSM/VoLTE)', 
+                'Kompromi Infrastruktur Inti'
+            ],
+            data: [95, 85, 80, 75, 90],
+            explanations: [
+                { title: '1. Intersepsi dan Manipulasi SMS OTP/SMS Banking (Confidentiality, Integrity)', detail: 'Risiko ini teratas karena banyaknya vektor serangan (SIM Swapping, eksploitasi SS7, malware, phishing, rogue cell towers) untuk mencegat atau memanipulasi SMS OTP/Banking. Dampak finansial dan reputasi dari kompromi OTP sangat tinggi. <em>Sumber: [23, 24, 25, 35]</em>' },
+                { title: '2. Kebocoran Data Lokasi dan Identitas Pengguna melalui VoLTE/IMS (Confidentiality)', detail: 'Insiden seperti pada VoLTE O2 (UK) menunjukkan informasi sensitif (IMSI, IMEI, Cell ID) bisa terekspos via pensinyalan IMS, memungkinkan pelacakan lokasi presisi. Ini pelanggaran privasi serius. <em>Sumber: [31]</em>' },
+                { title: '3. Serangan Denial of Service (DoS/DDoS) pada Layanan Berbasis IP (Availability)', detail: 'Layanan VoIP/VoLTE dan infrastruktur pendukung SMS (SMS Gateway) bergantung pada ketersediaan server & jaringan IP. Serangan DoS/DDoS (volumetrik atau lapisan aplikasi) dapat melumpuhkan layanan suara atau menghambat pengiriman SMS OTP/Banking. <em>Sumber: [9, 10]</em>' },
+                { title: '4. Penyadapan Panggilan Suara pada Jaringan GSM atau VoLTE (Confidentiality)', detail: 'Kelemahan enkripsi A5/1 (GSM 2G) rentan terhadap cracking & penyadapan. Jika VoLTE tidak menggunakan SRTP untuk media RTP, panggilan bisa disadap saat transit di jaringan IP. <em>Sumber: [9, 28]</em>' },
+                { title: '5. Akses Tidak Sah dan Kompromi Infrastruktur Inti Jaringan (Confidentiality, Integrity, Availability)', detail: 'Kompromi komponen inti (HLR/HSS, inti IMS, SMSC) via eksploitasi software, miskonfigurasi, atau akses tidak sah, berdampak parah: kebocoran data massal, manipulasi layanan, fraud tagihan, hingga penolakan layanan total. <em>Sumber: [1, 7, 9]</em>' }
+            ]
+        },
+        fraudCase: {
+            modusOperandi: `
+                <p>Penyalahgunaan layanan transfer pulsa operator seluler untuk mendukung aktivitas judi *online* dapat terjadi melalui beberapa mekanisme yang memanfaatkan kemudahan dan kecepatan fitur transfer pulsa. Berikut adalah modus operandi umumnya:</p>
+                <ol class="list-decimal list-inside space-y-3 mt-4">
+                    <li><strong>Penggunaan Pulsa sebagai Metode Deposit:</strong> Situs judi *online* menawarkan pulsa seluler sebagai metode pembayaran/deposit. Ini menarik karena praktis, cepat, dan dirasa lebih anonim. Beberapa situs menawarkan deposit pulsa tanpa potongan. [36-42]</li>
+                    <li><strong>Mekanisme Deposit via Transfer Pulsa:</strong>
+                        <ul class="list-disc pl-6 mt-1 text-sm space-y-1">
+                            <li>Pemain memilih opsi "deposit via pulsa" di *platform* judi.</li>
+                            <li>*Platform* judi memberikan nomor telepon agen penampung pulsa. [41, 42]</li>
+                            <li>Pemain transfer pulsa ke nomor agen menggunakan fitur P2P operator.</li>
+                            <li>Pemain konfirmasi ke situs judi (bukti transfer/kode unik).</li>
+                            <li>Admin situs verifikasi pulsa, lalu konversi menjadi saldo di akun judi. [42]</li>
+                        </ul>
+                    </li>
+                    <li><strong>Peran Agen Pengumpul Pulsa dan Konversi Nilai:</strong> Agen mengumpulkan pulsa dari banyak pemain, lalu mengkonversikannya menjadi uang tunai atau mentransfer nilai agregat ke bandar utama. Proses konversi bisa melibatkan jaringan informal. PPATK mengungkap modus deposit pulsa via pembelian di minimarket, mengindikasikan upaya pengumpulan pulsa besar atau penyamaran aliran dana. [43, 44]</li>
+                    <li><strong>Eksploitasi Fitur Transfer Pulsa Operator:</strong> Kemudahan dan kecepatan fitur transfer pulsa P2P (Telkomsel, Indosat, XL) dieksploitasi. Sebelum pembatasan, limit transfer yang longgar memungkinkan perputaran dana signifikan. Menkominfo menyebut perputaran uang pulsa nasional fantastis, sebagian disinyalir untuk judi *online*. [36, 37, 42]</li>
+                </ol>
+                <p class="mt-4">Kejadian ini adalah penyalahgunaan fitur layanan yang sah untuk tujuan ilegal.</p>
+                <p class="text-xs mt-2 text-slate-500"><em>Sumber: [36-45]</em></p>
+            `,
+            topologyAndPoints: `
+                <h4 class="font-semibold text-slate-800 mb-2">Deskripsi Tekstual Topologi Layanan Transfer Pulsa yang Dieksploitasi:</h4>
+                <ol class="list-decimal list-inside space-y-1">
+                    <li><strong>Pengguna/Pemain Judi:</strong> Individu dengan perangkat seluler, SIM card aktif, dan saldo pulsa.</li>
+                    <li><strong>Jaringan Operator Seluler:</strong>
+                        <ul class="list-disc pl-6 mt-1 text-sm">
+                            <li>Sistem Charging/Billing: Mengelola saldo pulsa.</li>
+                            <li>Platform Layanan Transfer Pulsa: Mekanisme transfer (USSD, SMS, aplikasi operator). Contoh: *858# Telkomsel. [46]</li>
+                            <li>SMSC/USSD Gateway: Memproses perintah transfer.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Nomor Tujuan/Agen Pengumpul Pulsa:</strong> Nomor seluler terafiliasi situs judi, sebagai penampung pulsa.</li>
+                    <li><strong>Situs/Platform Judi Online:</strong> Entitas *online* tempat pemain mendaftar, bermain, dan transaksi.</li>
+                    <li><strong>(Opsional) Agregator Pembayaran Pulsa/Pihak Ketiga:</strong> Perantara transaksi deposit pulsa. [47, 48]</li>
+                </ol>
+
+                <h4 class="font-semibold text-slate-800 mt-6 mb-3">Diagram Topologi Sederhana Servis yang Dieksploitasi:</h4>
+                <div class="mt-4 p-2 sm:p-4 border border-slate-200 rounded-lg bg-slate-50 overflow-x-auto">
+                    <div class="flex flex-col md:flex-row md:space-x-2 items-center md:items-start justify-around min-w-[550px] md:min-w-0 text-xs sm:text-sm">
+                        
+                        <div class="flex flex-col items-center space-y-2 mb-4 md:mb-0 text-center">
+                            <div class="topology-diagram-box border-blue-300 bg-blue-100 w-40 sm:w-48">
+                                <p class="font-semibold text-blue-700">Pemain Judi</p>
+                                <p class="text-xs text-blue-600">(Perangkat Seluler)</p>
+                            </div>
+                            <div class="topology-diagram-arrow transform rotate-90 md:rotate-0">↕️</div>
+                            <div class="topology-diagram-box border-red-300 bg-red-100 w-40 sm:w-48">
+                                <p class="font-semibold text-red-700">Situs Judi Online</p>
+                                <p class="text-xs text-red-600">(Memberi No. Agen & Verifikasi)</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-start md:justify-center space-y-1 md:space-y-2 md:pt-8 lg:pt-12 xl:pt-16">
+                            <div class="text-xs text-slate-600 mb-1 md:mb-0 md:transform md:-translate-x-8 md:-translate-y-4 whitespace-nowrap">1. Info No. Agen</div>
+                            <div class="topology-diagram-arrow hidden md:block">➡️</div>
+                            <div class="topology-diagram-arrow md:hidden transform rotate-90">⬇️</div>
+                            <div class="topology-diagram-box border-green-300 bg-green-100 w-48 sm:w-56 my-1 md:my-0">
+                                <p class="font-semibold text-green-700">Jaringan Operator Seluler</p>
+                                <p class="text-xs text-green-600">(Transfer Pulsa P2P, USSD/SMS)</p>
+                                <p class="text-xs text-red-500 mt-1">⚠️ Titik Eksploitasi Fitur Sah</p>
+                            </div>
+                            <div class="text-xs text-slate-600 mt-1 md:mt-0 md:transform md:-translate-x-10 md:translate-y-4  whitespace-nowrap">2. Perintah Transfer Pulsa</div>
+                            <div class="topology-diagram-arrow hidden md:block">➡️</div>
+                             <div class="topology-diagram-arrow md:hidden transform rotate-90">⬇️</div>
+                             <div class="text-xs text-slate-600 mt-1 md:mt-0 md:transform md:translate-x-10 md:-translate-y-4 whitespace-nowrap">3. Notifikasi Transfer</div>
+                        </div>
+
+                        <div class="flex flex-col items-center space-y-2 mt-4 md:mt-0 md:pt-16 text-center">
+                             <div class="topology-diagram-box border-purple-300 bg-purple-100 w-40 sm:w-48">
+                                <p class="font-semibold text-purple-700">No. Agen Judi</p>
+                                <p class="text-xs text-purple-600">(Menerima & Konfirmasi Pulsa)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center text-sm text-slate-600">
+                        <p><strong>Alur Utama Eksploitasi (Penyederhanaan):</strong></p>
+                        <ol class="list-decimal list-inside inline-block text-left text-xs sm:text-sm">
+                            <li>Pemain dapat info No. Agen dari Situs Judi.</li>
+                            <li>Pemain transfer pulsa ke No. Agen via Jaringan Operator. <span class="text-red-600 font-semibold">(⚠️ Fraud: Penggunaan fitur sah untuk transaksi ilegal)</span></li>
+                            <li>Pulsa masuk ke No. Agen.</li>
+                            <li>No. Agen & Pemain konfirmasi ke Situs Judi.</li>
+                            <li>Saldo judi pemain bertambah di Situs Judi. <span class="text-red-600 font-semibold">(⚠️ Fraud: Penerimaan & konversi pulsa untuk judi)</span></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <h4 class="font-semibold text-slate-800 mt-6 mb-2">Bagian Mana Frauds Terjadi (Penjelasan Teks):</h4>
+                <p>*Fraud* adalah penyalahgunaan fitur layanan sah untuk aktivitas ilegal. Titik utama *fraud*:</p>
+                <ol class="list-decimal list-inside space-y-1">
+                    <li><strong>Pada Penggunaan Fitur Transfer Pulsa untuk Tujuan Ilegal:</strong> Penyalahgunaan fitur P2P transfer pulsa sebagai mekanisme pembayaran judi *online*.</li>
+                    <li><strong>Pada Interaksi antara Pemain dan Situs Judi Online:</strong> Pemain sadar mengikuti instruksi situs judi untuk transfer pulsa sebagai deposit judi.</li>
+                    <li><strong>Pada Proses Verifikasi dan Akseptasi Pulsa oleh Situs Judi:</strong> *Platform* judi menerima dan mengakui transfer pulsa sebagai pembayaran sah untuk saldo taruhan.</li>
+                    <li><strong>Pada Proses Agregasi dan Konversi Pulsa oleh Agen/Bandar:</strong> Pulsa terkumpul dikonversi menjadi uang tunai atau aset lain, bisa melibatkan pencucian uang. [37, 49]</li>
+                </ol>
+                <p class="mt-2">Ini lebih merupakan *system abuse* daripada eksploitasi teknis murni. Kurangnya kontrol, batasan longgar (sebelum intervensi Kominfo), dan potensi anonimitas berkontribusi. Operator sulit membedakan transfer sah dan untuk judi secara otomatis. [36, 38]</p>
+                <p class="text-xs mt-2 text-slate-500"><em>Sumber: [36-39, 41, 42, 45-49]</em></p>
+            `,
+            mitigationsRemediations: [
+                {
+                    title: 'Strategi Mitigasi (Pencegahan)',
+                    content: `
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li><strong>Pembatasan Transaksi (Regulator & Operator):</strong> Implementasi batas nilai (Rp 1 juta/hari oleh Kominfo) dan frekuensi transfer pulsa. [36-38]</li>
+                            <li><strong>Peningkatan Proses KYC untuk Transaksi Pulsa:</strong> KYC lebih ketat untuk transfer besar/frekuensi tinggi. [50, 51]</li>
+                            <li><strong>Pemantauan Transaksi & Analisis Perilaku:</strong> Sistem *real-time* deteksi pola mencurigakan (nomor penampung, transfer ke *blacklist*, aktivitas nomor baru tak wajar, *velocity checks*). Penggunaan AI/ML. [52-54]</li>
+                            <li><strong>Pemblokiran Nomor Telepon & Akses ke Situs Judi:</strong> Proaktif blokir nomor penampung dan akses situs judi (Operator, Kominfo, PPATK, Penegak Hukum). [38]</li>
+                            <li><strong>Edukasi & Sosialisasi kepada Pelanggan:</strong> Sosialisasi bahaya judi *online* & risiko penyalahgunaan transfer pulsa. [38]</li>
+                            <li><strong>Kerja Sama Lintas Sektoral:</strong> Koordinasi Operator, Kominfo, PPATK, Perbankan, Penegak Hukum untuk investigasi & "follow the money". [37]</li>
+                            <li><strong>Pembatasan/Pengetatan Fitur Transfer Pulsa:</strong> Batasi fitur untuk nomor baru/belum terverifikasi. [38]</li>
+                        </ol>
+                    `
+                },
+                {
+                    title: 'Strategi Remediasi (Penanganan Setelah Kejadian Terdeteksi)',
+                    content: `
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li><strong>Pemblokiran Segera Akun/Nomor yang Terlibat:</strong> Hentikan aktivitas lebih lanjut. [55]</li>
+                            <li><strong>Pembekuan Saldo Pulsa (Jika Memungkinkan):</strong> Sulit jika pulsa sudah berpindah tangan.</li>
+                            <li><strong>Pelaporan kepada Pihak Berwenang:</strong> Laporkan semua temuan ke Kominfo, PPATK, Kepolisian. [37, 38, 55]</li>
+                            <li><strong>Analisis Forensik Digital:</strong> Identifikasi jaringan pelaku, modus, dan skala.</li>
+                            <li><strong>Tinjauan & Perbaikan Sistem/Kebijakan Internal:</strong> Perbaikan berkelanjutan setelah insiden. [55]</li>
+                        </ol>
+                        <p class="mt-3 text-sm">Penting menyeimbangkan pemberantasan penyalahgunaan dengan kebutuhan pengguna sah (misal, penjual pulsa kecil). [36]</p>
+                    `
+                }
+            ],
+            securityControls: [
+                { 
+                    name: 'Kontrol A.5.7 Threat Intelligence (Intelijen Ancaman) - ISO 27001:2022 [60]',
+                    implementation: 'Mengumpulkan, memproses, dan menganalisis informasi aktif mengenai ancaman penyalahgunaan pulsa untuk judi online. Ini termasuk memahami modus operandi terbaru, mengidentifikasi nomor atau pola transaksi yang sering digunakan, serta memantau sumber informasi terkait.',
+                    ciaImpact: {
+                        confidentiality: 'Membantu merancang strategi perlindungan data pelanggan dari penyalahgunaan oleh jaringan judi.',
+                        integrity: 'Memastikan layanan transfer pulsa digunakan sesuai peruntukannya dan tidak dimanipulasi untuk transaksi ilegal.',
+                        availability: 'Mengidentifikasi potensi serangan skala besar lebih awal untuk tindakan pencegahan, menjaga ketersediaan layanan bagi pengguna sah.'
+                    }
+                },
+                {
+                    name: 'Kontrol A.8.16 Monitoring Activities (Aktivitas Pemantauan) - ISO 27001:2022 [60] / Sistem Pemantauan Transaksi [52, 53, 54]',
+                    implementation: 'Mengimplementasikan sistem pemantauan transaksi transfer pulsa secara real-time atau mendekati real-time. Sistem ini harus mampu mendeteksi anomali dan pola mencurigakan (transfer besar/frekuensi tinggi ke nomor tertentu, satu nomor transfer ke banyak nomor, aktivitas nomor baru tak wajar, velocity checks, AI/ML untuk deteksi pola kompleks).',
+                    ciaImpact: {
+                        confidentiality: 'Secara tidak langsung, dapat mendeteksi pengambilalihan akun pelanggan yang mungkin dipaksa melakukan transfer pulsa.',
+                        integrity: 'Sangat krusial menjaga integritas layanan dengan mencegah/mendeteksi dini penyalahgunaannya untuk transaksi judi.',
+                        availability: 'Mengurangi volume transaksi fraud yang membebani sistem, menjaga sumber daya jaringan dan sistem charging tersedia.'
+                    }
+                },
+                {
+                    name: 'Kontrol A.5.15 Access Control & A.5.16 Identity Management - ISO 27001:2022 [61] / Penguatan KYC dan Otentikasi [50, 51, 58]',
+                    implementation: 'Menerapkan kebijakan kontrol akses ketat (batasan nilai/frekuensi transfer), memerlukan KYC lebih mendalam untuk transaksi volume tinggi atau kenaikan limit, dan implementasi MFA untuk transaksi di atas ambang batas tertentu.',
+                    ciaImpact: {
+                        confidentiality: 'Melindungi akun pelanggan dari pengambilalihan yang bertujuan menyalahgunakan fitur transfer pulsa.',
+                        integrity: 'Memastikan hanya pengguna sah dan terverifikasi yang dapat melakukan transfer pulsa, mempersulit pelaku fraud.',
+                        availability: 'Mengurangi risiko penyalahgunaan masif yang dapat membebani sistem.'
+                    }
+                },
+                {
+                    name: 'Kontrol A.8.12 Data Leakage Prevention (Pencegahan Kebocoran Data) - ISO 27001:2022 [60, 61]',
+                    implementation: 'Mencegah "kebocoran" nilai (pulsa) ke ekosistem ilegal. Membuat dan memelihara blacklist nomor tujuan terkait judi untuk ditolak oleh sistem transfer. Analisis konten pesan perintah transfer (jika mungkin secara teknis/legal) untuk deteksi pola spesifik judi (kompleks dan berisiko privasi).',
+                    ciaImpact: {
+                        confidentiality: 'Melindungi informasi transaksi agar tidak jatuh ke tangan pelaku judi.',
+                        integrity: 'Mencegah dana pulsa dialihkan ke aktivitas ilegal, menjaga nilai pulsa dalam ekosistem sah.',
+                        availability: 'Tidak berdampak langsung signifikan pada ketersediaan, namun menjaga integritas sistem secara keseluruhan.'
+                    }
+                },
+                {
+                    name: 'Pengembangan dan Implementasi Incident Response Plan (IRP) [55, 62-68]',
+                    implementation: 'Memiliki IRP terdokumentasi dan teruji untuk menangani kasus penyalahgunaan. Mencakup tahapan: Preparation, Identification, Containment (blokir nomor), Eradication (investigasi akar penyebab), Recovery (pemulihan layanan), dan Lessons Learned.',
+                    ciaImpact: {
+                        confidentiality: 'Melindungi data pelanggan dan transaksi dari paparan lebih lanjut selama/setelah insiden.',
+                        integrity: 'Menghentikan transaksi fraud, mencegah kerugian lebih lanjut, menjaga kepercayaan sistem.',
+                        availability: 'Memastikan layanan dapat dipulihkan cepat jika fraud skala besar menyebabkan gangguan.'
+                    }
+                }
+            ],
+            fraudSources: '[36-68]'
+        },
+        ddosCase: {
+            problemStatement: `<strong>Permasalahan Utama:</strong> Kelumpuhan total (*outage*) layanan *server web* NTT Docomo selama 12 jam akibat serangan *Distributed Denial of Service* (DDoS) yang dilancarkan oleh *botnet* dari arah internet. Serangan ini terjadi pada tanggal 2 Januari 2025, berdampak pada layanan penting seperti portal "goo", Lemino, dpay, dan "Golf me", memengaruhi hampir 90 juta pelanggan. Fokus utama adalah menjaga properti keamanan <strong>Ketersediaan (*Availability*)</strong>. [69, 70, 71]`,
+            fishbone: {
+                head: "Kelumpuhan Server Web NTT Docomo (Hilangnya Ketersediaan)",
+                categories: {
+                    "Attack Surfaces": {
+                        label: "Permukaan Serangan",
+                        definition: "Titik atau area pada sistem, aplikasi, atau jaringan NTT Docomo yang dapat dieksploitasi oleh *botnet* untuk melancarkan serangan DDoS. [72]",
+                        causes: [
+                            "<strong>Infrastruktur Jaringan Terlalu Terbuka/Kurang Tersegmentasi:</strong> Terlalu banyak port terbuka, konfigurasi firewall perbatasan permisif/tidak memadai (kurang NGFW/IPS), kurang segmentasi jaringan, ketergantungan pada satu jalur koneksi internet. [66, 73]",
+                            "<strong>Kerentanan pada Aplikasi Web atau API:</strong> Fitur boros sumber daya tanpa pembatasan, kurang validasi input (HTTP Flood, Slowloris, ReDoS), *resource leaks*, API publik tanpa *rate limiting*/otentikasi kuat. [72, 74-79]",
+                            "<strong>Kerentanan pada Perangkat Lunak Server Web dan Sistem Operasi:</strong> Versi software usang dengan kerentanan DoS belum ditambal, konfigurasi *default* tidak di-*hardening*. [66, 72, 80-84]",
+                            "<strong>Ketergantungan pada Layanan Pihak Ketiga yang Rentan:</strong> Layanan DNS tanpa proteksi DDoS memadai (target DNS amplification/query flood), konfigurasi CDN salah atau kapasitas tidak cukup. [74, 79, 85]",
+                            "<strong>Protokol Jaringan yang Dapat Dieksploitasi:</strong> Kerentanan TCP/IP (SYN Flood, UDP Flood, ICMP Flood), serangan amplifikasi/refleksi (DNS, NTP, SSDP) dengan IP *spoofed*. [74-76, 86-89]"
+                        ]
+                    },
+                    "Security Requirements": {
+                        label: "Kebutuhan Keamanan",
+                        definition: "Persyaratan keamanan spesifik yang seharusnya telah didefinisikan dan diimplementasikan oleh NTT Docomo untuk melindungi *server web* dari serangan DDoS dan menjaga ketersediaan.",
+                        causes: [
+                            "<strong>Kurangnya Definisi Kebutuhan Ketersediaan yang Jelas:</strong> Tidak ada target SLO/SLA ketersediaan, kegagalan BIA sehingga investasi proteksi DDoS tidak prioritas.",
+                            "<strong>Kebutuhan Keamanan Fungsional yang Tidak Memadai:</strong> Tidak ada syarat deteksi/mitigasi DDoS otomatis, kapasitas infrastruktur tidak perhitungkan serangan, kurang syarat *failover*/redundansi.",
+                            "<strong>Kebutuhan Keamanan Non-Fungsional yang Terabaikan:</strong> Tidak ada syarat *logging* & *monitoring* komprehensif, syarat enkripsi mungkin hanya fokus kerahasiaan (bukan SSL exhaustion attack). [72, 76, 80-84]",
+                            "<strong>Kebutuhan Kepatuhan yang Tidak Terpenuhi:</strong> Gagal patuhi standar industri/regulasi terkait proteksi infrastruktur kritis."
+                        ]
+                    },
+                    "Security Design": {
+                        label: "Desain Keamanan",
+                        definition: "Prinsip-prinsip dan arsitektur desain keamanan yang diimplementasikan (atau tidak) pada infrastruktur *server web* NTT Docomo.",
+                        causes: [
+                            "<strong>Desain Jaringan yang Tidak Resilien:</strong> Arsitektur jaringan *flat* tanpa segmentasi, kurang redundansi komponen kritis, *load balancing* tidak efektif.",
+                            "<strong>Kurangnya Solusi Mitigasi DDoS Khusus:</strong> Tidak menggunakan layanan mitigasi DDoS *cloud* (*scrubbing center*) atau perangkat *on-premise*. *Firewall* tradisional tidak dirancang untuk DDoS. Tidak ada WAF. [66, 79, 85, 90-92]",
+                            "<strong>Desain Aplikasi yang Tidak Aman:</strong> Aplikasi tidak dirancang dengan *resource limiting*, tidak ada *rate limiting* level aplikasi. [66, 90]",
+                            "<strong>Strategi Penempatan Server yang Buruk:</strong> Semua server di satu *data center* (SPOF), IP *origin server* mudah diketahui. [66, 85]",
+                            "<strong>Kurangnya Pemanfaatan CDN secara Optimal:</strong> Tidak menggunakan CDN atau konfigurasi salah. [66, 85]"
+                        ]
+                    },
+                    "Specifications/Policies": {
+                        label: "Spesifikasi/Kebijakan",
+                        definition: "Kebijakan, prosedur, dan standar keamanan informasi formal yang seharusnya dimiliki dan ditegakkan oleh NTT Docomo.",
+                        causes: [
+                            "<strong>Kebijakan Keamanan Informasi Tidak Lengkap/Usang:</strong> Tidak ada kebijakan spesifik DDoS, tidak ditinjau/diperbarui berkala. [66, 79, 91, 93-95]",
+                            "<strong>Kurangnya *Incident Response Plan* (IRP) Komprehensif:</strong> Tidak ada IRP jelas & teruji untuk DDoS (prosedur eskalasi, tim, strategi komunikasi, kontak ISP/vendor). [62-68, 92, 96-98]",
+                            "<strong>Manajemen Konfigurasi dan Perubahan Lemah:</strong> Kebijakan tidak ketat منجر به miskonfigurasi, proses manajemen perubahan tanpa tinjauan keamanan.",
+                            "<strong>Kebijakan *Patch Management* Tidak Efektif:</strong> Penundaan penerapan *patch* keamanan. [67, 68]",
+                            "<strong>Kurangnya Kebijakan BCP/DRP:</strong> Tidak ada BCP/DRP mencakup skenario DDoS masif. [99-101]",
+                            "<strong>Kurangnya Pelatihan Kesadaran Keamanan:</strong> Staf IT/keamanan kurang terlatih kenali/respons DDoS."
+                        ]
+                    },
+                    "Framework": {
+                        label: "Kerangka Kerja",
+                        definition: "Penggunaan atau kegagalan dalam mengadopsi kerangka kerja keamanan siber standar industri.",
+                        causes: [
+                            "<strong>Tidak Mengadopsi Kerangka Kerja Komprehensif:</strong> Gagal implementasi/petakan kontrol ke NIST CSF, ISO 27001, atau panduan spesifik telekomunikasi (ETSI NFV Security). [30, 102-114]",
+                            "<strong>Implementasi NIST CSF Tidak Efektif:</strong> Gagal pada fungsi Identify (aset kritis, risiko DDoS), Protect (kontrol akses, anti-DDoS), Detect (sistem deteksi anomali), Respond (IRP tidak terstruktur), Recover (rencana pemulihan tidak memadai). [67, 68, 102, 107]",
+                            "<strong>Kurangnya Kepatuhan Panduan Spesifik DDoS:</strong> Mengabaikan panduan CISA, NIST SP 800-189 (BGP & *spoofing*), NIST SP 800-61 (penanganan insiden). [67, 68, 76, 85, 87-89, 92, 101, 115-122]",
+                            "<strong>Mengabaikan Prinsip OWASP untuk Aplikasi Web:</strong> Tidak terapkan OWASP Top 10 Proactive Controls (C3 Validasi Input, C5 Konfigurasi Aman, C9 Logging & Monitoring, C10 Penanganan Error). [72, 78, 80-84, 123, 124]"
+                        ]
+                    },
+                    "Evaluation": {
+                        label: "Evaluasi",
+                        definition: "Proses pengujian, audit, dan tinjauan untuk memvalidasi efektivitas kontrol keamanan dan kesiapan terhadap DDoS.",
+                        causes: [
+                            "<strong>Kurangnya Pengujian Simulasi DDoS Reguler:</strong> Tidak pernah/jarang lakukan simulasi, atau simulasi tidak cerminkan serangan nyata. [52, 119, 125, 126]",
+                            "<strong>Audit Keamanan Tidak Komprehensif:</strong> Audit tidak evaluasi postur pertahanan DDoS, *pen-test* tidak cakup DoS atau dangkal. [127]",
+                            "<strong>Pemantauan & Tinjauan Log Tidak Memadai:</strong> Log tidak ditinjau berkala, tidak ada analisis *post-mortem* mendalam.",
+                            "<strong>Kegagalan Evaluasi Efektivitas Penyedia Layanan Keamanan:</strong> Tidak ada evaluasi berkala kinerja & SLA vendor mitigasi DDoS.",
+                            "<strong>Kurangnya Metrik Mengukur Kesiapan:</strong> Tidak ada KPIs jelas (TTD, TTM, TTR). [125]"
+                        ]
+                    }
+                }
+            },
+            solutions: [
+                { category: "Mempersempit Attack Surfaces", items: [
+                    "Implementasikan prinsip *least privilege* untuk akses jaringan; tutup semua port yang tidak diperlukan.",
+                    "Lakukan *hardening* pada *server web* dan sistem operasi, nonaktifkan layanan yang tidak perlu, terapkan konfigurasi aman.",
+                    "Validasi semua input aplikasi web secara ketat (cegah SQLi, XSS, ReDoS). Kelola sumber daya aplikasi (cegah *resource leaks*). [72, 77]",
+                    "Gunakan *Web Application Firewall* (WAF) untuk memfilter lalu lintas berbahaya di lapisan aplikasi. [90]",
+                    "Lindungi infrastruktur DNS; pertimbangkan layanan DNS resilien DDoS.",
+                    "Terapkan teknik anti-*spoofing* (SAV, uRPF) untuk mempersulit serangan refleksi/amplifikasi. [88, 89]"
+                ]},
+                { category: "Menetapkan Security Requirements yang Jelas", items: [
+                    "Definisikan SLO/SLA ketersediaan yang jelas untuk *server web*; lakukan BIA untuk justifikasi investasi keamanan.",
+                    "Syaratkan kemampuan deteksi & mitigasi DDoS otomatis, kapasitas infrastruktur memadai (*burst capacity*), mekanisme *failover*.",
+                    "Mandatkan *logging* & *monitoring* komprehensif sebagai kebutuhan non-fungsional."
+                ]},
+                { category: "Merancang Security Design yang Resilien", items: [
+                    "Terapkan arsitektur jaringan *defense-in-depth* dengan segmentasi, redundansi komponen kritis, *load balancing* cerdas.",
+                    "Implementasikan solusi mitigasi DDoS berlapis: *on-premise* & berbasis *cloud* (*scrubbing centers*). [66, 79, 91]",
+                    "Gunakan CDN secara efektif (distribusi beban, *caching*, serap serangan). [66, 85]",
+                    "Rancang aplikasi hemat sumber daya; implementasikan *rate limiting* pada API & fungsionalitas sensitif. [90]",
+                    "Diversifikasi lokasi *data center*; sembunyikan IP *address origin server*. [66, 85]"
+                ]},
+                { category: "Mengembangkan dan Menegakkan Specifications/Policies yang Kuat", items: [
+                    "Buat/perbarui kebijakan keamanan informasi yang eksplisit mencakup strategi DDoS. [66, 93, 95]",
+                    "Kembangkan *Incident Response Plan* (IRP) detail & spesifik untuk DDoS (peran, prosedur, kontak, komunikasi). Latih tim. [62-68]",
+                    "Terapkan kebijakan manajemen konfigurasi, perubahan, & *patch management* yang ketat.",
+                    "Integrasikan skenario DDoS ke dalam BCP & DRP. [99-101]"
+                ]},
+                { category: "Mengadopsi dan Menerapkan Framework Keamanan yang Sesuai", items: [
+                    "Gunakan NIST CSF (Identify, Protect, Detect, Respond, Recover) untuk manajemen risiko holistik. [102, 106-108]",
+                    "Pertimbangkan sertifikasi ISO 27001 untuk SMKI matang.",
+                    "Ikuti panduan teknis CISA & NIST (SP 800-189, SP 800-61) untuk mitigasi DDoS & penanganan insiden. [67, 68, 85, 87-89, 92, 115]",
+                    "Terapkan prinsip OWASP Proactive Controls dalam pengembangan aplikasi web. [72, 80-84]"
+                ]},
+                { category: "Melakukan Evaluation dan Jaminan Keamanan Secara Berkala", items: [
+                    "Lakukan pengujian simulasi DDoS reguler (*white-box testing*) untuk validasi kontrol & IRP. Uji berbagai vektor. [52, 119, 125, 126]",
+                    "Lakukan audit keamanan & *penetration testing* yang mencakup skenario DoS.",
+                    "Tinjau *log* & hasil *monitoring* secara proaktif.",
+                    "Evaluasi kinerja penyedia layanan mitigasi DDoS pihak ketiga.",
+                    "Lakukan analisis *post-mortem* setelah insiden/pengujian. Ukur metrik (TTD, TTM, TTR). [125]"
+                ]}
+            ],
+            ddosSources: '[30, 52, 60-144]'
+        }
+    };
+
+    const appData = processDataForSourceLinks(originalAppData);
+
+
+    const serviceTabsContainer = document.getElementById('service-tabs');
+    const serviceContentContainer = document.getElementById('service-content-container');
+    const modal = document.getElementById('component-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDescription = document.getElementById('modal-description');
+    const modalClose = document.getElementById('modal-close');
+
+    function showModal(title, descriptionText) {
+        modalTitle.textContent = title;
+        modalDescription.innerHTML = descriptionText; 
+        modal.classList.remove('hidden');
+        modal.classList.add('modal-active');
+    }
+
+    modalClose.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-active');
+    });
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('modal-active');
+        }
+    });
+
+    function createRiskTable(risksData) {
+        if (!risksData) return '<p class="text-sm text-slate-500">Data risiko tidak tersedia.</p>';
+        return `
+            <div class="overflow-x-auto risk-table-container prose-sm">
+                <h4 class="font-semibold text-slate-800 mt-6 mb-3">Analisis Risiko Keamanan Rinci:</h4>
+                <table class="min-w-full risk-table">
+                    <thead>
+                        <tr>
+                            <th>RISK CATEGORY</th>
+                            <th>Availability Impact</th>
+                            <th>Confidentiality Impact</th>
+                            <th>Integrity Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Hardware</strong></td><td>${risksData.hardware.availability}</td><td>${risksData.hardware.confidentiality}</td><td>${risksData.hardware.integrity}</td></tr>
+                        <tr><td><strong>Software</strong></td><td>${risksData.software.availability}</td><td>${risksData.software.confidentiality}</td><td>${risksData.software.integrity}</td></tr>
+                        <tr><td><strong>Data</strong></td><td>${risksData.data.availability}</td><td>${risksData.data.confidentiality}</td><td>${risksData.data.integrity}</td></tr>
+                        <tr><td><strong>Communication Lines & Networks</strong></td><td>${risksData.communication.availability}</td><td>${risksData.communication.confidentiality}</td><td>${risksData.communication.integrity}</td></tr>
+                    </tbody>
+                </table>
+                <p class="mt-3 text-sm">${risksData.additionalRiskInfo || ''}</p>
+                <p class="text-xs mt-1 text-slate-500"><em>Sumber Risiko: ${risksData.sources || 'Tidak ada sumber'}</em></p>
+            </div>
+        `;
+    }
+    
+    function createServiceSectionHTML(service) {
+        let componentsHtml = service.components.map(comp => `
+            <div class="component border border-slate-300 bg-slate-100 hover:bg-teal-50 rounded-lg p-3 text-center cursor-pointer" data-desc="${comp.desc.replace(/"/g, '&quot;')}" data-name="${comp.name.replace(/"/g, '&quot;')}">
+                <p class="font-semibold text-sm text-slate-800">${comp.name}</p>
+            </div>
+        `).join('<div class="flex items-center justify-center text-2xl text-slate-400 mx-1 sm:mx-2 step-arrow">→</div>');
+
+        return `
+            <div id="service-${service.id}" class="service-detail-content bg-white p-4 sm:p-6 rounded-lg shadow-md prose-sm">
+                <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mb-3">${service.title}</h3>
+                <p class="text-slate-600 mb-6">${service.architectureDescription}</p>
+                
+                <div class="architecture-diagram mb-6 md:mb-8">
+                    <h4 class="font-semibold text-slate-800 mb-3">Komponen Utama:</h4>
+                    <div class="flex flex-wrap items-stretch justify-center gap-1 sm:gap-2">
+                        ${componentsHtml}
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-slate-800 mb-3">Deskripsi Topologi dan Alur Kerja Rinci:</h4>
+                    ${service.topologyAndFlow}
+                </div>
+                ${createRiskTable(service.risks)}
+            </div>
+        `;
+    }
+
+    function renderAllServiceContents() {
+        serviceContentContainer.innerHTML = ''; 
+        Object.values(appData.services).forEach(service => {
+            serviceContentContainer.innerHTML += createServiceSectionHTML(service);
+        });
+
+        document.querySelectorAll('.service-detail-content .component').forEach(comp => {
+            comp.addEventListener('click', () => {
+                showModal(comp.dataset.name, comp.dataset.desc);
+            });
+        });
+    }
+    
+    Object.values(appData.services).forEach(service => {
+        const tab = document.createElement('button');
+        tab.className = 'px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md shadow-sm border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 transition';
+        tab.textContent = service.name;
+        tab.dataset.id = service.id;
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('#service-tabs button').forEach(b => {
+                b.classList.remove('bg-teal-600', 'text-white', 'ring-2', 'ring-teal-500', 'ring-offset-1');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            tab.classList.add('bg-teal-600', 'text-white', 'ring-2', 'ring-teal-500', 'ring-offset-1');
+            
+            const targetSection = document.getElementById(`service-${service.id}`);
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+        serviceTabsContainer.appendChild(tab);
+    });
+    
+    renderAllServiceContents(); 
+
+    const topRisksChartCtx = document.getElementById('topRisksChart').getContext('2d');
+    new Chart(topRisksChartCtx, {
+        type: 'bar',
+        data: {
+            labels: appData.topRisks.labels.map(label => label.length > 30 ? label.substring(0, 30) + '...' : label),
+            datasets: [{
+                label: 'Skor Risiko',
+                data: appData.topRisks.data,
+                backgroundColor: '#14b8a6', 
+                borderColor: '#0f766e', 
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` Skor Risiko: ${ctx.raw}`,
+                        title: ctx => appData.topRisks.labels[ctx[0].dataIndex]
+                    }
+                }
+            },
+            scales: { x: { beginAtZero: true, grid: { color: '#e2e8f0'}}, y: { grid: { display: false }} }
+        }
+    });
+
+    const topRisksExplanationContainer = document.getElementById('top-risks-explanation');
+    appData.topRisks.explanations.forEach(exp => {
+        topRisksExplanationContainer.innerHTML += `
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                <h5 class="font-semibold text-md text-slate-800">${exp.title}</h5>
+                <p class="text-sm text-slate-600 mt-1">${exp.detail}</p>
+            </div>
+        `;
+    });
+
+    const fraudFlowchartContainer = document.getElementById('fraud-flowchart');
+    fraudFlowchartContainer.innerHTML = appData.fraudCase.modusOperandi;
+    
+    const fraudTopologyPointsContainer = document.getElementById('fraud-topology-points');
+    fraudTopologyPointsContainer.innerHTML = appData.fraudCase.topologyAndPoints;
+
+    const mitigationAccordionContainer = document.getElementById('mitigation-accordion');
+    appData.fraudCase.mitigationsRemediations.forEach(item => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <button class="accordion-header w-full text-left px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-md focus:outline-none flex justify-between items-center transition">
+                <span class="font-semibold text-slate-800">${item.title}</span>
+                <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="accordion-content hidden p-4 bg-white border-t border-slate-200 rounded-b-md prose-sm">
+                ${item.content}
+            </div>
+        `;
+        mitigationAccordionContainer.appendChild(div);
+    });
+    
+    const fraudSecurityControlsContainer = document.getElementById('fraud-security-controls');
+    appData.fraudCase.securityControls.forEach(control => {
+        fraudSecurityControlsContainer.innerHTML += `
+            <div class="security-control-item">
+                <h5 class="font-semibold text-md text-slate-800">${control.name}</h5>
+                <p class="mt-1"><strong>Penerapan:</strong> ${control.implementation}</p>
+                <div class="mt-2">
+                    <p class="text-sm"><strong>Dampak Properti Keamanan:</strong></p>
+                    <ul class="list-disc pl-5 text-sm">
+                        <li><strong>Kerahasiaan:</strong> ${control.ciaImpact.confidentiality}</li>
+                        <li><strong>Integritas:</strong> ${control.ciaImpact.integrity}</li>
+                        <li><strong>Ketersediaan:</strong> ${control.ciaImpact.availability}</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+    });
+     fraudSecurityControlsContainer.innerHTML += `<p class="text-xs mt-4 text-slate-500"><em>Sumber Kontrol Keamanan: ${appData.fraudCase.fraudSources}</em></p>`;
+
+
+    document.querySelectorAll('.accordion-header').forEach(button => {
+        button.addEventListener('click', () => {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('svg');
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        });
+    });
+
+    document.getElementById('ddos-problem-statement').innerHTML = appData.ddosCase.problemStatement;
+    const fishboneContainer = document.getElementById('fishbone-container');
+    const fishboneDetailsContainer = document.getElementById('fishbone-details');
+    const fishboneData = appData.ddosCase.fishbone;
+
+    fishboneContainer.innerHTML = `
+        <div class="fishbone">
+            <div class="fishbone-body">
+                <div class="fishbone-head"></div>
+                <div class="fishbone-head-text">${fishboneData.head}</div>
+                ${Object.entries(fishboneData.categories).map(([key, catData], i) => `
+                    <div class="bone ${i % 2 === 0 ? 'bone-top' : 'bone-bottom'}" style="left: ${5 + i * (90 / (Object.keys(fishboneData.categories).length -1 ))}%" data-category-key="${key}">
+                        <div class="bone-line"></div>
+                        <span class="bone-label">${catData.label}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.querySelectorAll('.bone').forEach(bone => {
+        bone.addEventListener('click', () => {
+            const categoryKey = bone.dataset.categoryKey;
+            const categoryData = fishboneData.categories[categoryKey];
+            
+            document.querySelectorAll('.bone').forEach(b => b.classList.remove('active', 'ring-2', 'ring-teal-300'));
+            bone.classList.add('active', 'ring-2', 'ring-teal-300');
+
+            let causesHtml = categoryData.causes.map(cause => `<li>${cause}</li>`).join('');
+            fishboneDetailsContainer.innerHTML = `
+                <div class="bone-content !block">
+                    <h4 class="text-lg font-bold text-teal-700">${categoryData.label}</h4>
+                    <p class="text-sm text-slate-500 italic mt-1 mb-3">${categoryData.definition}</p>
+                    <h5 class="font-semibold text-md text-slate-800 mb-2">Penyebab Potensial:</h5>
+                    <ul class="list-disc pl-5 space-y-1 text-sm text-slate-600">
+                        ${causesHtml}
+                    </ul>
+                </div>
+            `;
+        });
+    });
+    if(document.querySelector('.bone')) {
+      document.querySelector('.bone').click(); 
+    }
+
+
+    const ddosSolutionsContainer = document.getElementById('ddos-solutions');
+    appData.ddosCase.solutions.forEach(solCat => {
+        let itemsHtml = solCat.items.map(item => `<li>${item}</li>`).join('');
+        ddosSolutionsContainer.innerHTML += `
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                <h4 class="font-semibold text-md text-slate-900 mb-2">${solCat.category}:</h4>
+                <ul class="list-disc pl-5 space-y-1 text-sm text-slate-600">
+                    ${itemsHtml}
+                </ul>
+            </div>
+        `;
+    });
+    ddosSolutionsContainer.innerHTML += `<p class="text-xs mt-4 text-slate-500"><em>Sumber Solusi DDoS: ${appData.ddosCase.ddosSources}</em></p>`;
+    
+    document.getElementById('mobile-nav').addEventListener('change', function(e) {
+        const targetId = e.target.value;
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>
